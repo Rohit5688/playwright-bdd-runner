@@ -56,38 +56,6 @@ Customize the extension via `.vscode/settings.json` or global settings:
 - `Playwright`
 - `playwright-bdd`
 
-Install dependencies using:
-
-```bash
-npm install
-```
-
----
-
-## 🧪 Example `.feature` File
-
-```gherkin
-Feature: Login functionality
-
-  Scenario: Successful login
-    Given the user navigates to the login page
-    When the user enters valid credentials
-    Then the user should be redirected to the dashboard
-```
-
----
-
-## 🛠️ Development
-
-To build and test the extension locally:
-
-```bash
-npm install
-npm run compile
-code .
-```
-
----
 
 ## 📃 License
 
@@ -95,8 +63,3 @@ MIT
 
 ---
 
-## 🙌 Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
-
----
