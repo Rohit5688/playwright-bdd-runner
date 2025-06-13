@@ -1,0 +1,154 @@
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
+import { runBDDTests, terminateBDDTests } from './bddRunner';
+import { FeatureCodeLensProvider } from './featureCodeLens';
+
+export async function activate(context: vscode.ExtensionContext) {
+  console.log('✅ Playwright BDD extension activated');
+  const controller = vscode.tests.createTestController('playwrightBdd', 'Playwright BDD Tests');
+  context.subscriptions.push(controller);
+
+  const outputChannel = vscode.window.createOutputChannel('Playwright BDD');
+  context.subscriptions.push(outputChannel);
+
+  const config = vscode.workspace.getConfiguration('playwrightBdd');
+  const featureFolder = config.get<string>('featureFolder', 'features');
+
+  const discoverFeatureTests = async (filter?: string) => {
+    controller.items.replace([]);
+    const files = await vscode.workspace.findFiles(`${featureFolder}/**/*.feature`);
+    for (const file of files) {
+      const id = file.fsPath;
+      const label = path.basename(file.fsPath);
+      const testItem = controller.createTestItem(id, label, file);
+      controller.items.add(testItem);
+      // Read file content and parse scenarios
+      const content = (await vscode.workspace.fs.readFile(file)).toString();
+      const lines = content.split('\n');
+
+      let currentScenario: vscode.TestItem | null = null;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const scenarioMatch = line.match(/^\s*Scenario(?: Outline)?:\s*(.+)/);
+        if (scenarioMatch) {
+          const scenarioName = scenarioMatch[1].trim();
+          if (filter && !scenarioName.includes(filter) && !lines[i - 1]?.includes(filter)) {
+            continue;
+          }
+          const scenarioId = `${file.fsPath}::${scenarioName}`;
+          const scenarioItem = controller.createTestItem(scenarioId, scenarioName, file);
+          testItem.children.add(scenarioItem);
+          currentScenario = scenarioItem;
+        }
+
+        const examplesMatch = line.match(/^\s*Examples:/);
+        if (examplesMatch && currentScenario) {
+          let exampleIndex = 1;
+          let headerSkipped = false;
+          for (let j = i + 1; j < lines.length; j++) {
+            const exampleLine = lines[j].trim();
+
+            if (exampleLine.startsWith('|')) {
+              if (!headerSkipped) {
+                headerSkipped = true; // Skip the header row
+                continue;
+              }
+
+              const exampleValues = exampleLine.split('|').map(v => v.trim()).filter(Boolean);
+              const exampleName = `Validate ${currentScenario.label} - Example ${exampleIndex}: [${exampleValues.join(', ')}]`;
+              const sanitizedExampleName = exampleName.replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+              const exampleId = `${currentScenario.id}::${sanitizedExampleName}`;
+              const exampleItem = controller.createTestItem(exampleId, sanitizedExampleName, file);
+              currentScenario.children.add(exampleItem);
+              exampleIndex++;
+            } else if (exampleLine === '') {
+              break;
+            }
+          }
+        }
+      }
+    }
+  };
+  await discoverFeatureTests();
+
+  const watcher = vscode.workspace.createFileSystemWatcher(`${featureFolder}/**/*.feature`);
+  watcher.onDidCreate(() => discoverFeatureTests());
+  watcher.onDidChange(() => discoverFeatureTests());
+  watcher.onDidDelete(() => discoverFeatureTests());
+  context.subscriptions.push(watcher);
+
+  controller.createRunProfile(
+    'Run',
+    vscode.TestRunProfileKind.Run,
+    (request, token) => {
+      const run = controller.createTestRun(request);
+      outputChannel.show(true);
+
+      if (request.include) {
+        for (const test of request.include) {
+          run.enqueued(test);
+          run.started(test);
+          runBDDTests(run, controller, test, outputChannel);
+        }
+      } else {
+        runBDDTests(run, controller, undefined, outputChannel);
+      }
+    },
+    true
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.runTests', () => {
+      runBDDTests(undefined, controller, undefined, outputChannel);
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      { language: 'feature', scheme: 'file' },
+      new FeatureCodeLensProvider()
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.runScenario', (grepArg: string) => {
+      const config = vscode.workspace.getConfiguration('playwrightBdd');
+      const configPath = config.get<string>('configPath') || './playwright.config.ts';
+      const tsconfigPath = config.get<string>('tsconfigPath') || '';
+      const tsconfigArg = tsconfigPath ? `${tsconfigPath}` : '';
+
+      const terminal = vscode.window.createTerminal('Playwright BDD');
+      terminal.show();
+      terminal.sendText(`npx playwright test ${tsconfigArg} --config=${configPath} --grep "${grepArg}"`);
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.terminateTests', () => {
+      terminateBDDTests();
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.filterScenarios', async () => {
+      const filter = await vscode.window.showInputBox({ prompt: 'Enter scenario name or tag to filter' });
+      await discoverFeatureTests(filter);
+    })
+  );
+
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  statusBarItem.text = '$(beaker) Run BDD Tests';
+  statusBarItem.command = 'playwright-bdd.runTests';
+  statusBarItem.tooltip = 'Run all Playwright BDD tests';
+  statusBarItem.show();
+  context.subscriptions.push(statusBarItem);
+
+  const stopButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+  stopButton.text = '$(debug-stop) Stop BDD Tests';
+  stopButton.command = 'playwright-bdd.terminateTests';
+  stopButton.tooltip = 'Terminate running Playwright BDD tests';
+  stopButton.show();
+  context.subscriptions.push(stopButton);
+}
