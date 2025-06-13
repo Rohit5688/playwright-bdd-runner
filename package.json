@@ -1,5 +1,5 @@
 {
-  "name": "playwright-bdd-test-runner",
+  "name": "playwright-bdd-test-runner-vscode",
   "displayName": "Playwright BDD Test Runner",
   "description": "Run Playwright BDD tests directly from VS Code with Test Explorer integration and feature file support.",
   "version": "0.0.1",
