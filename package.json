@@ -3,7 +3,7 @@
   "displayName": "Playwright BDD Test Runner",
   "description": "Run Playwright BDD tests directly from VS Code with Test Explorer integration and feature file support.",
   "version": "0.0.1",
-  "publisher": "rohit5688",
+  "publisher": "rohitsakhawalkar",
   "engines": {
     "vscode": "^1.101.0"
   },
