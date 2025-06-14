@@ -22,7 +22,7 @@
   "icon": "images/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Rohit5688/playwright-bdd-test-runner.git"
+    "url": "https://github.com/Rohit5688/playwright-bdd-runner.git"
   },
   "bugs": {
     "url": "https://github.com/Rohit5688/playwright-bdd-test-runner/issues"
