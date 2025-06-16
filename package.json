@@ -31,6 +31,7 @@
   "activationEvents": [
     "onCommand:playwright-bdd.runTests",
     "onCommand:playwright-bdd.runScenario",
+    "onCommand:playwright-bdd.runScenarioWithFeatureGen",
     "onCommand:playwright-bdd.terminateTests",
     "onCommand:playwright-bdd.filterScenarios",
     "workspaceContains:**/*.feature"
@@ -47,12 +48,20 @@
         "title": "Run Scenario"
       },
       {
+        "command": "playwright-bdd.runScenarioWithFeatureGen",
+        "title": "Run Scenario with Feature Generation"
+      },
+      {
         "command": "playwright-bdd.terminateTests",
         "title": "Terminate Playwright BDD Tests"
       },
       {
         "command": "playwright-bdd.filterScenarios",
         "title": "Filter Scenarios"
+      },
+      {
+        "command": "playwright-bdd.runScenarioDynamic",
+        "title": "Run Scenario or Feature (Dynamic)"
       }
     ],
     "configuration": {

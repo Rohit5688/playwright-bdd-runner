@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
 import { runBDDTests, terminateBDDTests } from './bddRunner';
 import { FeatureCodeLensProvider } from './featureCodeLens';
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('✅ Playwright BDD extension activated');
+
   const controller = vscode.tests.createTestController('playwrightBdd', 'Playwright BDD Tests');
   context.subscriptions.push(controller);
 
@@ -14,6 +14,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const config = vscode.workspace.getConfiguration('playwrightBdd');
   const featureFolder = config.get<string>('featureFolder', 'features');
+  const enableFeatureGen = config.get<boolean>('enableFeatureGen', false);
 
   const discoverFeatureTests = async (filter?: string) => {
     controller.items.replace([]);
@@ -23,7 +24,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const label = path.basename(file.fsPath);
       const testItem = controller.createTestItem(id, label, file);
       controller.items.add(testItem);
-      // Read file content and parse scenarios
+
       const content = (await vscode.workspace.fs.readFile(file)).toString();
       const lines = content.split('\n');
 
@@ -52,7 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
             if (exampleLine.startsWith('|')) {
               if (!headerSkipped) {
-                headerSkipped = true; // Skip the header row
+                headerSkipped = true;
                 continue;
               }
 
@@ -108,22 +109,87 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       { language: 'feature', scheme: 'file' },
-      new FeatureCodeLensProvider()
+      new FeatureCodeLensProvider(enableFeatureGen)
     )
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.runScenarioDynamic', (grepArg: string, enableFeatureGen: boolean) => {
+      const config = vscode.workspace.getConfiguration('playwrightBdd');
+      const configPath = config.get<string>('configPath') || './playwright.config.ts';
+      const tsconfigPath = config.get<string>('tsconfigPath') || '';
+      const configPathArg = configPath;
+      const tsconfigArg = tsconfigPath ? tsconfigPath : '';
+      const tagsArg = grepArg ? `--grep "${grepArg}"` : '';
+
+      let featureGenCommand = config.get<string>('featureGenCommand') || 'npx bddgen --config=${configPath}';
+      let testCommand = config.get<string>('testCommand') || 'npx playwright test ${tsconfigArg} --config=${configPath} ${tagsArg}';
+
+      featureGenCommand = featureGenCommand
+        .replace('${configPath}', configPathArg)
+        .replace('${tsconfigArg}', tsconfigArg)
+        .replace('${tagsArg}', tagsArg);
+
+      testCommand = testCommand
+        .replace('${configPath}', configPathArg)
+        .replace('${tsconfigArg}', tsconfigArg)
+        .replace('${tagsArg}', tagsArg);
+
+      const terminal = vscode.window.createTerminal('Playwright BDD');
+      terminal.show();
+
+      if (enableFeatureGen) {
+        terminal.sendText(`${featureGenCommand} && ${testCommand}`);
+      } else {
+        terminal.sendText(testCommand);
+      }
+    })
+  );
+
 
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.runScenario', (grepArg: string) => {
       const config = vscode.workspace.getConfiguration('playwrightBdd');
       const configPath = config.get<string>('configPath') || './playwright.config.ts';
       const tsconfigPath = config.get<string>('tsconfigPath') || '';
-      const tsconfigArg = tsconfigPath ? `${tsconfigPath}` : '';
+      const tsconfigArg = tsconfigPath ? `--project=${tsconfigPath}` : '';
 
       const terminal = vscode.window.createTerminal('Playwright BDD');
       terminal.show();
       terminal.sendText(`npx playwright test ${tsconfigArg} --config=${configPath} --grep "${grepArg}"`);
     })
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.runScenarioWithFeatureGen', (grepArg: string) => {
+      const config = vscode.workspace.getConfiguration('playwrightBdd');
+      const configPath = config.get<string>('configPath') || './playwright.config.ts';
+      const tsconfigPath = config.get<string>('tsconfigPath') || '';
+      const tags = grepArg ? grepArg : config.get<string>('tags') || '';
+
+      const configPathArg = configPath;
+      const tsconfigArg = tsconfigPath ? tsconfigPath : '';
+      const tagsArg = tags ? `--grep "${tags}"` : '';
+
+      let featureGenCommand = config.get<string>('featureGenCommand') || 'npx bddgen --config=${configPath}';
+      let testCommand = config.get<string>('testCommand') || 'npx playwright test ${tsconfigArg} --config=${configPath} ${tagsArg}';
+
+      featureGenCommand = featureGenCommand
+        .replace('${configPath}', configPathArg)
+        .replace('${tsconfigArg}', tsconfigArg)
+        .replace('${tagsArg}', tagsArg);
+
+      testCommand = testCommand
+        .replace('${configPath}', configPathArg)
+        .replace('${tsconfigArg}', tsconfigArg)
+        .replace('${tagsArg}', tagsArg);
+
+      const terminal = vscode.window.createTerminal('Playwright BDD');
+      terminal.show();
+      terminal.sendText(`${featureGenCommand} && ${testCommand}`);
+    })
+  );
+
 
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.terminateTests', () => {
