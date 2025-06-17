@@ -2,7 +2,7 @@
   "name": "playwright-bdd-lens",
   "displayName": "BDD Test Runner",
   "description": "Run Playwright BDD tests directly from VS Code with Test Explorer integration and feature file support.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "rohitsakhawalkar",
   "engines": {
     "vscode": "^1.101.0"
@@ -34,6 +34,7 @@
     "onCommand:playwright-bdd.runScenarioWithFeatureGen",
     "onCommand:playwright-bdd.terminateTests",
     "onCommand:playwright-bdd.filterScenarios",
+    "onCommand:playwright-bdd.refreshTests",
     "workspaceContains:**/*.feature"
   ],
   "main": "./dist/extension.js",
@@ -41,27 +42,38 @@
     "commands": [
       {
         "command": "playwright-bdd.runTests",
-        "title": "Run Playwright BDD Tests"
+        "title": "Run Playwright BDD Tests",
+        "icon": "$(play)"
       },
       {
         "command": "playwright-bdd.runScenario",
-        "title": "Run Scenario"
+        "title": "Run Scenario",
+        "icon": "$(beaker)"
       },
       {
         "command": "playwright-bdd.runScenarioWithFeatureGen",
-        "title": "Run Scenario with Feature Generation"
+        "title": "Run Scenario with Feature Generation",
+        "icon": "$(run-all)"
       },
       {
         "command": "playwright-bdd.terminateTests",
-        "title": "Terminate Playwright BDD Tests"
+        "title": "Terminate Playwright BDD Tests",
+        "icon": "$(beaker-stop)"
       },
       {
         "command": "playwright-bdd.filterScenarios",
-        "title": "Filter Scenarios"
+        "title": "Filter Scenarios",
+        "icon": "$(filter)"
       },
       {
         "command": "playwright-bdd.runScenarioDynamic",
-        "title": "Run Scenario or Feature (Dynamic)"
+        "title": "Run Scenario or Feature (Dynamic)",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "playwright-bdd.refreshTests",
+        "title": "Refresh BDD Tests",
+        "icon": "$(refresh)"
       }
     ],
     "configuration": {
@@ -110,6 +122,33 @@
         {
           "id": "playwrightBdd",
           "label": "Playwright BDD Tests"
+        }
+      ]
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "playwright-bdd.refreshTests"
+        }
+      ],
+      "testing/item/context": [
+        {
+          "command": "playwright-bdd.refreshTests",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "playwright-bdd.terminateTests",
+          "group": "navigation"
+        },
+        {
+          "command": "playwright-bdd.refreshTests",
+          "group": "navigation"
+        },
+        {
+          "command": "playwright-bdd.filterScenarios",
+          "group": "navigation"
         }
       ]
     }

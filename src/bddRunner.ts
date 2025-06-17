@@ -63,17 +63,25 @@ export function runBDDTests(
       if (err) {
         outputChannel?.appendLine(`${label} failed:\n${stderr}`);
         run?.appendOutput(stderr);
-        run?.failed(testItem ?? controller?.items.get('root')!, new vscode.TestMessage(stderr));
+        if (testItem) {
+          run.failed(testItem, new vscode.TestMessage(stderr));
+        } else {
+          outputChannel?.appendLine('No valid test item to mark as failed.');
+        }
       } else {
         outputChannel?.appendLine(`${label} completed:\n${stdout}`);
         run?.appendOutput(stdout);
-        run?.passed(testItem ?? controller?.items.get('root')!);
+        if (testItem) {
+          run.passed(testItem);
+        } else {
+          outputChannel?.appendLine('No valid test item to mark as passed.');
+        }
         if (onSuccess) {
           onSuccess();
-          return; // Prevent double call to run.end()
+          return;
         }
       }
-      run?.end(); // Always end the run
+      run?.end();
     });
   };
 

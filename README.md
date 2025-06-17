@@ -19,7 +19,7 @@
   Each example row in a Scenario Outline is discovered as a separate test case. Run all or individual examples directly from the Test Explorer or CodeLens.
 
 - **Precise Example Execution:**  
-  When you run a single example from a Scenario Outline (via Test Explorer), only that example is executed (not all examples).
+  When you run a single example from a Scenario Outline (via Test Explorer), only that example is executed (not all examples), thanks to line-number-based execution.
 
 - **Custom Commands:**  
   - Run all tests
@@ -115,7 +115,7 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
 
 - **From the Test Explorer:**  
   Expand the Scenario Outline node to see all examples. Click the play button next to any example to run it individually.  
-  > **Only the selected example will run, not the entire outline.**
+  > **Only the selected example will run, not the entire outline.**  
 
 - **From CodeLens:**  
   If you have CodeLens enabled, you’ll see a “▶ Run Scenario” button above the Scenario Outline. This runs all examples for that outline.
