@@ -16,7 +16,10 @@
   Run an entire feature file (all scenarios and examples) directly from the Test Explorer or using the `Run Feature` command or CodeLens.
 
 - **Scenario Outline Support:**  
-  Each example row in a Scenario Outline is discovered as a separate test case. Run all or individual examples directly from the Test Explorer.
+  Each example row in a Scenario Outline is discovered as a separate test case. Run all or individual examples directly from the Test Explorer or CodeLens.
+
+- **Precise Example Execution:**  
+  When you run a single example from a Scenario Outline (via Test Explorer), only that example is executed (not all examples).
 
 - **Custom Commands:**  
   - Run all tests
@@ -60,7 +63,7 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
 ```json
 {
   "playwrightBdd.configPath": "./playwright.config.ts",
-  "playwrightBdd.tsconfigPath": "",
+  "playwrightBdd.tsconfigPath": "--tsconfig=./tsconfig.json",
   "playwrightBdd.tags": "",
   "playwrightBdd.featureGenCommand": "npx bddgen --config=${configPath}",
   "playwrightBdd.testCommand": "npx playwright test ${tsconfigArg} --config=${configPath} ${tagsArg}",
@@ -111,7 +114,8 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
 #### Running Individual Examples
 
 - **From the Test Explorer:**  
-  Expand the Scenario Outline node to see all examples. Click the play button next to any example to run it individually.
+  Expand the Scenario Outline node to see all examples. Click the play button next to any example to run it individually.  
+  > **Only the selected example will run, not the entire outline.**
 
 - **From CodeLens:**  
   If you have CodeLens enabled, you’ll see a “▶ Run Scenario” button above the Scenario Outline. This runs all examples for that outline.
@@ -161,4 +165,4 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
 
 ## Issues & Feedback
 
-Please [open an issue](https://github.com/Rohit5688/playwright-bdd-runner/issues) for bugs, feature requests,
+Please [open an issue](https://github.com/Rohit5688/playwright-bdd-runner/issues) for bugs, feature requests, or questions.

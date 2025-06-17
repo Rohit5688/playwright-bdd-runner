@@ -1,4 +1,3 @@
-
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { exec } from 'child_process';
@@ -49,10 +48,10 @@ export function runBDDTests(
     testCommand += ` "${relativeToFeatureFolder}"`;
 
     if (testItem.label && testItem.parent) {
-      const isGeneric = testItem.label.includes('Example') && !testItem.label.includes('[');
-      const grepTarget = isGeneric ? testItem.parent.label : testItem.label;
+      const grepTarget = testItem.label;
       testCommand += ` --grep "${grepTarget}"`;
     }
+
   }
 
   const runCommand = (cmd: string, label: string, onSuccess?: () => void) => {
@@ -62,32 +61,28 @@ export function runBDDTests(
       currentProcess = null;
 
       if (err) {
-        outputChannel?.appendLine(`${label} failed:
-${stderr}`);
+        outputChannel?.appendLine(`${label} failed:\n${stderr}`);
         run?.appendOutput(stderr);
         run?.failed(testItem ?? controller?.items.get('root')!, new vscode.TestMessage(stderr));
       } else {
-        outputChannel?.appendLine(`${label} completed:
-${stdout}`);
+        outputChannel?.appendLine(`${label} completed:\n${stdout}`);
         run?.appendOutput(stdout);
         run?.passed(testItem ?? controller?.items.get('root')!);
         if (onSuccess) {
           onSuccess();
+          return; // Prevent double call to run.end()
         }
       }
+      run?.end(); // Always end the run
     });
   };
 
   if (enableFeatureGen) {
     runCommand(featureGenCommand, 'Feature generation', () => {
-      runCommand(testCommand, 'BDD test run', () => {
-        run?.end();
-      });
+      runCommand(testCommand, 'BDD test run');
     });
   } else {
-    runCommand(testCommand, 'BDD test run', () => {
-      run?.end();
-    });
+    runCommand(testCommand, 'BDD test run');
   }
 }
 

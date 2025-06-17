@@ -1,7 +1,7 @@
 import { createBdd } from 'playwright-bdd';
 const { Given, When, Then } = createBdd();
 
-Given('I open the homepage', async ({ page }) => {
+Given('I open the {string} homepage', async ({page}, arg: string) => {
   await page.goto('https://example.com');
 });
 
