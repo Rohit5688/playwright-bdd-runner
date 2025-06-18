@@ -21,6 +21,9 @@
 - **Precise Example Execution:**  
   When you run a single example from a Scenario Outline (via Test Explorer), only that example is executed (not all examples), thanks to line-number-based execution.
 
+- **Refresh BDD Tests:**  
+  Use the `Refresh BDD Tests` command from the Command Palette or context menu to manually reload and rediscover all feature files and scenarios.
+
 - **Custom Commands:**  
   - Run all tests
   - Run individual scenarios
@@ -28,6 +31,7 @@
   - Run an entire feature
   - Terminate running tests
   - Filter scenarios by tags
+  - Refresh BDD tests
 
 - **Configurable:**  
   - Custom Playwright config and tsconfig paths
@@ -95,6 +99,7 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
   - `Terminate Playwright BDD Tests`
   - `Filter Scenarios`
   - `Run Scenario or Feature (Dynamic)`
+  - `Refresh BDD Tests`
 
   Access via Command Palette (`Cmd+Shift+P`) or right-click context menus.
 
@@ -116,6 +121,7 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
 - **From the Test Explorer:**  
   Expand the Scenario Outline node to see all examples. Click the play button next to any example to run it individually.  
   > **Only the selected example will run, not the entire outline.**  
+  This is achieved by passing the correct line number to Playwright, ensuring precise execution.
 
 - **From CodeLens:**  
   If you have CodeLens enabled, you’ll see a “▶ Run Scenario” button above the Scenario Outline. This runs all examples for that outline.
