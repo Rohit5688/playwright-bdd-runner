@@ -3,9 +3,9 @@ import * as path from 'path';
 import { runBDDTests, terminateBDDTests } from './bddRunner';
 import { FeatureCodeLensProvider } from './featureCodeLens';
 
+
 export async function activate(context: vscode.ExtensionContext) {
   console.log('Playwright BDD extension activated');
-
   const controller = vscode.tests.createTestController('playwrightBdd', 'Playwright BDD Tests');
   context.subscriptions.push(controller);
 
@@ -20,13 +20,20 @@ export async function activate(context: vscode.ExtensionContext) {
     controller.items.replace([]);
     const files = await vscode.workspace.findFiles(`${featureFolder}/**/*.feature`);
     for (const file of files) {
+      const content = (await vscode.workspace.fs.readFile(file)).toString();
+      const lines = content.split('\n');
+
+      // Extract the feature title from the file content
+      const featureMatch = content.match(/^\s*Feature:\s*(.+)/m);
+      const label = featureMatch ? featureMatch[1].trim() : path.basename(file.fsPath);
+
+      // Use the full file path as the unique ID
       const id = file.fsPath;
-      const label = path.basename(file.fsPath);
+
+      // Create the feature-level test item with the extracted label
       const testItem = controller.createTestItem(id, label, file);
       controller.items.add(testItem);
 
-      const content = (await vscode.workspace.fs.readFile(file)).toString();
-      const lines = content.split('\n');
 
       let currentScenario: vscode.TestItem | null = null;
       let scenarioTemplate = '';
@@ -186,6 +193,25 @@ export async function activate(context: vscode.ExtensionContext) {
     },
     true
   );
+  controller.createRunProfile(
+    'Debug',
+    vscode.TestRunProfileKind.Debug,
+    (request, token) => {
+      const run = controller.createTestRun(request);
+      outputChannel.show(true);
+
+      if (request.include) {
+        for (const test of request.include) {
+          run.enqueued(test);
+          run.started(test);
+          vscode.commands.executeCommand('playwright-bdd.debugScenario', test.label);
+        }
+      }
+
+      run.end();
+    },
+    true
+  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.runTests', () => {
@@ -231,6 +257,36 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.debugScenario', async (grepArg: string) => {
+      const config = vscode.workspace.getConfiguration('playwrightBdd');
+      const configPath = config.get<string>('configPath') || './playwright.config.ts';
+      const tsconfigPath = config.get<string>('tsconfigPath') || '';
+
+      const debugConfig: vscode.DebugConfiguration = {
+        type: 'pwa-node',
+        request: 'launch',
+        name: 'Debug Playwright BDD Scenario',
+        program: '${workspaceFolder}/node_modules/.bin/playwright',
+        args: [
+          'test',
+          tsconfigPath ? `${tsconfigPath}` : '',
+          `--config=${configPath}`,
+          '--debug',
+          '--grep',
+          grepArg
+        ].filter(Boolean),
+        console: 'integratedTerminal',
+        internalConsoleOptions: 'neverOpen',
+        cwd: '${workspaceFolder}',
+        env: {
+          PWDEBUG: '1'
+        }
+      };
+
+      vscode.debug.startDebugging(undefined, debugConfig);
+    })
+  );
 
 
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);

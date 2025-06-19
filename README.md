@@ -12,14 +12,17 @@
 - **Scenario & Feature CodeLens:**  
   Inline “▶ Run Scenario” and “▶ Run Feature” buttons above each scenario and at the top of `.feature` files for quick execution.
 
-- **Run Feature:**  
-  Run an entire feature file (all scenarios and examples) directly from the Test Explorer or using the `Run Feature` command or CodeLens.
+- **Run & Debug Feature:**  
+  Run or debug an entire feature file (all scenarios and examples) directly from the Test Explorer or using the `Run Feature`/`Debug Feature` command or CodeLens.
+
+- **Run & Debug Scenario:**  
+  Run or debug individual scenarios or examples directly from the Test Explorer or CodeLens.
 
 - **Scenario Outline Support:**  
-  Each example row in a Scenario Outline is discovered as a separate test case. Run all or individual examples directly from the Test Explorer or CodeLens.
+  Each example row in a Scenario Outline is discovered as a separate test case. Run or debug all or individual examples directly from the Test Explorer or CodeLens.
 
 - **Precise Example Execution:**  
-  When you run a single example from a Scenario Outline (via Test Explorer), only that example is executed (not all examples), thanks to line-number-based execution.
+  When you run or debug a single example from a Scenario Outline (via Test Explorer), only that example is executed (not all examples), thanks to line-number-based execution.
 
 - **Refresh BDD Tests:**  
   Use the `Refresh BDD Tests` command from the Command Palette or context menu to manually reload and rediscover all feature files and scenarios.
@@ -28,7 +31,7 @@
   - Run all tests
   - Run individual scenarios
   - Run scenario with feature generation
-  - Run an entire feature
+  - Run or debug an entire feature
   - Terminate running tests
   - Filter scenarios by tags
   - Refresh BDD tests
@@ -71,6 +74,7 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
   "playwrightBdd.tags": "",
   "playwrightBdd.featureGenCommand": "npx bddgen --config=${configPath}",
   "playwrightBdd.testCommand": "npx playwright test ${tsconfigArg} --config=${configPath} ${tagsArg}",
+  "playwrightBdd.debugCommand": "npx playwright test --debug ${testTarget} ${tsconfigArg} --config=${configPath} ${tagsArg}",
   "playwrightBdd.enableFeatureGen": true,
   "playwrightBdd.featureFolder": "features"
 }
@@ -81,20 +85,22 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
 ## Usage
 
 - **Test Explorer:**  
-  Open the Testing sidebar to view and run discovered features and scenarios.
+  Open the Testing sidebar to view and run or debug discovered features and scenarios.
 
-- **Run Feature:**  
-  Right-click a feature file in the Test Explorer and select “Run Feature” to execute all scenarios and examples in that file.
+- **Run/Debug Feature:**  
+  Right-click a feature file in the Test Explorer and select “Run Feature” or “Debug Feature” to execute or debug all scenarios and examples in that file.
 
 - **CodeLens:**  
   Open a `.feature` file and click:
-  - “▶ Run Feature” at the top of the file to run all scenarios and examples in that feature.
-  - “▶ Run Scenario” above any scenario to run just that scenario.
+  - “▶ Run Feature” or “🐞 Debug Feature” at the top of the file to run or debug all scenarios and examples in that feature.
+  - “▶ Run Scenario” or “🐞 Debug Scenario” above any scenario to run or debug just that scenario.
 
 - **Commands:**  
   - `Run Playwright BDD Tests`
   - `Run Feature`
+  - `Debug Feature`
   - `Run Scenario`
+  - `Debug Scenario`
   - `Run Scenario with Feature Generation`
   - `Terminate Playwright BDD Tests`
   - `Filter Scenarios`
@@ -116,30 +122,30 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
 - The extension fully supports [Scenario Outline](https://cucumber.io/docs/gherkin/reference/#scenario-outline) in your `.feature` files.
 - Each example row in a Scenario Outline is discovered as a separate test case in the VS Code Test Explorer.
 
-#### Running Individual Examples
+#### Running or Debugging Individual Examples
 
 - **From the Test Explorer:**  
-  Expand the Scenario Outline node to see all examples. Click the play button next to any example to run it individually.  
-  > **Only the selected example will run, not the entire outline.**  
+  Expand the Scenario Outline node to see all examples. Click the play or debug button next to any example to run or debug it individually.  
+  > **Only the selected example will run or debug, not the entire outline.**  
   This is achieved by passing the correct line number to Playwright, ensuring precise execution.
 
 - **From CodeLens:**  
-  If you have CodeLens enabled, you’ll see a “▶ Run Scenario” button above the Scenario Outline. This runs all examples for that outline.
+  If you have CodeLens enabled, you’ll see “▶ Run Scenario” and “🐞 Debug Scenario” buttons above the Scenario Outline. These run or debug all examples for that outline.
 
 - **From Commands:**  
   Use the Command Palette (`Cmd+Shift+P`) and select:
-  - `Run Scenario` to run all examples for a scenario.
-  - `Run Scenario or Feature (Dynamic)` to run a specific example by providing a tag or example name.
+  - `Run Scenario` or `Debug Scenario` to run or debug all examples for a scenario.
+  - `Run Scenario or Feature (Dynamic)` to run or debug a specific example by providing a tag or example name.
 
 - **Tag Filtering:**  
-  You can filter and run specific examples by tagging them in your `.feature` file and setting the `playwrightBdd.tags` configuration.
+  You can filter and run or debug specific examples by tagging them in your `.feature` file and setting the `playwrightBdd.tags` configuration.
 
 ---
 
 ## Advanced
 
 - **Custom Test/Feature Generation Commands:**  
-  Use placeholders like `${configPath}`, `${tsconfigArg}`, and `${tagsArg}` in your commands for dynamic substitution.
+  Use placeholders like `${configPath}`, `${tsconfigArg}`, `${tagsArg}`, and `${testTarget}` in your commands for dynamic substitution.
 
 - **Tag Filtering:**  
   Set `playwrightBdd.tags` to filter scenarios or examples by tags (e.g., `@smoke`).
