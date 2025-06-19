@@ -3,7 +3,6 @@ import * as path from 'path';
 import { runBDDTests, terminateBDDTests } from './bddRunner';
 import { FeatureCodeLensProvider } from './featureCodeLens';
 
-
 export async function activate(context: vscode.ExtensionContext) {
   console.log('Playwright BDD extension activated');
   const controller = vscode.tests.createTestController('playwrightBdd', 'Playwright BDD Tests');
@@ -16,7 +15,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const featureFolder = config.get<string>('featureFolder', 'features');
   const enableFeatureGen = config.get<boolean>('enableFeatureGen', false);
 
-  const discoverFeatureTests = async (filter?: string) => {
+  const discoverFeatureTests = async () => {
     controller.items.replace([]);
     const files = await vscode.workspace.findFiles(`${featureFolder}/**/*.feature`);
     for (const file of files) {
@@ -34,7 +33,6 @@ export async function activate(context: vscode.ExtensionContext) {
       const testItem = controller.createTestItem(id, label, file);
       controller.items.add(testItem);
 
-
       let currentScenario: vscode.TestItem | null = null;
       let scenarioTemplate = '';
 
@@ -43,9 +41,6 @@ export async function activate(context: vscode.ExtensionContext) {
         const scenarioMatch = line.match(/^\s*Scenario(?: Outline)?:\s*(.+)/);
         if (scenarioMatch) {
           const scenarioName = scenarioMatch[1].trim();
-          if (filter && !scenarioName.includes(filter) && !lines[i - 1]?.includes(filter)) {
-            continue;
-          }
           const scenarioId = `${file.fsPath}::${scenarioName}`;
           const scenarioItem = controller.createTestItem(scenarioId, scenarioName, file);
           testItem.children.add(scenarioItem);
@@ -76,7 +71,6 @@ export async function activate(context: vscode.ExtensionContext) {
               for (const [key, value] of Object.entries(exampleData)) {
                 exampleLabel = exampleLabel.replace(new RegExp(`<${key}>`, 'g'), value);
               }
-              console.log(currentScenario);
               if (currentScenario) {
                 const exampleId = `${currentScenario.id}::${exampleLabel}`;
                 const exampleItem = controller.createTestItem(exampleId, exampleLabel, file);
@@ -233,13 +227,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('playwright-bdd.filterScenarios', async () => {
-      const filter = await vscode.window.showInputBox({ prompt: 'Enter scenario name or tag to filter' });
-      await discoverFeatureTests(filter);
-    })
-  );
-
-  context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.refreshTests', async () => {
       const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
       statusBarItem.text = '$(sync~spin) Refreshing features...';
@@ -287,7 +274,6 @@ export async function activate(context: vscode.ExtensionContext) {
       vscode.debug.startDebugging(undefined, debugConfig);
     })
   );
-
 
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   statusBarItem.text = '$(beaker) Run BDD Tests';

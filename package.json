@@ -33,7 +33,6 @@
     "onCommand:playwright-bdd.runScenario",
     "onCommand:playwright-bdd.runScenarioWithFeatureGen",
     "onCommand:playwright-bdd.terminateTests",
-    "onCommand:playwright-bdd.filterScenarios",
     "onCommand:playwright-bdd.refreshTests",
     "workspaceContains:**/*.feature"
   ],
@@ -59,11 +58,6 @@
         "command": "playwright-bdd.terminateTests",
         "title": "Terminate Playwright BDD Tests",
         "icon": "$(beaker-stop)"
-      },
-      {
-        "command": "playwright-bdd.filterScenarios",
-        "title": "Filter Scenarios",
-        "icon": "$(filter)"
       },
       {
         "command": "playwright-bdd.runScenarioDynamic",
@@ -149,10 +143,6 @@
         },
         {
           "command": "playwright-bdd.refreshTests",
-          "group": "navigation"
-        },
-        {
-          "command": "playwright-bdd.filterScenarios",
           "group": "navigation"
         }
       ]

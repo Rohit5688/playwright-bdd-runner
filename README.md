@@ -27,14 +27,9 @@
 - **Refresh BDD Tests:**  
   Use the `Refresh BDD Tests` command from the Command Palette or context menu to manually reload and rediscover all feature files and scenarios.
 
-- **Custom Commands:**  
-  - Run all tests
-  - Run individual scenarios
-  - Run scenario with feature generation
-  - Run or debug an entire feature
-  - Terminate running tests
-  - Filter scenarios by tags
-  - Refresh BDD tests
+- **Native Test Explorer Filtering:**  
+  Use the built-in filter/search box at the top of the Testing sidebar to quickly find scenarios, features, or examples by name or tag.  
+  > _Tip: Tags are searchable if included in the scenario label or description._
 
 - **Configurable:**  
   - Custom Playwright config and tsconfig paths
@@ -85,7 +80,8 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
 ## Usage
 
 - **Test Explorer:**  
-  Open the Testing sidebar to view and run or debug discovered features and scenarios.
+  Open the Testing sidebar to view and run or debug discovered features and scenarios.  
+  Use the built-in filter/search box at the top of the Testing sidebar to quickly find scenarios, features, or examples by name or tag.
 
 - **Run/Debug Feature:**  
   Right-click a feature file in the Test Explorer and select “Run Feature” or “Debug Feature” to execute or debug all scenarios and examples in that file.
@@ -103,7 +99,6 @@ You can customize extension behavior in your VS Code settings (`.vscode/settings
   - `Debug Scenario`
   - `Run Scenario with Feature Generation`
   - `Terminate Playwright BDD Tests`
-  - `Filter Scenarios`
   - `Run Scenario or Feature (Dynamic)`
   - `Refresh BDD Tests`
 
