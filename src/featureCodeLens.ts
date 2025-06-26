@@ -93,7 +93,7 @@ export class FeatureCodeLensProvider implements vscode.CodeLensProvider {
 
         // Look upward for the nearest tag line
         for (let j = i - 1; j >= 0; j--) {
-          const tagMatch = lines[j].match(/^\s*@(\w+)/);
+          const tagMatch = lines[j].match(/^\s*@[\w-]+/);
           if (tagMatch) {
             tag = `@${tagMatch[1]}`;
             break;
