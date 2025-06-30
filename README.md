@@ -1,175 +1,371 @@
-# BDD TEST RUNNER
+# 🎭 Playwright BDD Test Runner
 
-**Run Playwright BDD (Gherkin) tests directly from Visual Studio Code with Test Explorer integration, scenario and feature CodeLens, and feature file support.**
+A comprehensive VS Code extension for running Playwright BDD tests with advanced debugging, AI-powered assistance, and multi-workspace support.
 
----
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://marketplace.visualstudio.com/items?itemName=rohitsakhawalkar.playwright-bdd-lens)
+[![VS Code](https://img.shields.io/badge/VS%20Code-1.101.0+-brightgreen.svg)](https://code.visualstudio.com/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Features
+## 🚀 Quick Start
 
-- **Test Explorer Integration:**  
-  View, run, and debug Playwright BDD scenarios and features from the VS Code Testing sidebar.
+1. **Install the Extension**: Search for "BDD Test Runner" in the VS Code Marketplace
+2. **Open Your Project**: Open a workspace containing `.feature` files
+3. **Configure**: Access settings via Command Palette → "BDD Test Runner: Settings"
+4. **Run Tests**: Use the Test Explorer or Command Palette to execute your tests
+5. **Get AI Help**: Enable AI Copilot for intelligent debugging assistance
 
-- **Scenario & Feature CodeLens:**  
-  Inline “▶ Run Scenario” and “▶ Run Feature” buttons above each scenario and at the top of `.feature` files for quick execution.
+## ✨ Key Features
 
-- **Run & Debug Feature:**  
-  Run or debug an entire feature file (all scenarios and examples) directly from the Test Explorer or using the `Run Feature`/`Debug Feature` command or CodeLens.
+### 🧪 **Core BDD Testing**
+- **Full Gherkin Support**: Given/When/Then/And/But statements with Scenario Outlines
+- **Test Discovery**: Automatic detection and caching of feature files
+- **Test Explorer Integration**: Native VS Code Test Explorer support
+- **Step Definition Linking**: Navigate from steps to their implementations
+- **Tag-Based Filtering**: Run specific test subsets using `@tag` annotations
 
-- **Run & Debug Scenario:**  
-  Run or debug individual scenarios or examples directly from the Test Explorer or CodeLens.
+### 🤖 **AI-Powered Debugging** 
+- **Interactive Debug Assistant**: AI-powered debugging help with contextual suggestions
+- **Error Analysis**: Intelligent analysis of test failures with specific fix recommendations
+- **Smart Breakpoints**: AI-suggested strategic breakpoint placement
+- **Performance Optimization**: Automated suggestions for test performance improvements
+- **Code Generation**: Auto-generated fixes and step definitions
 
-- **Scenario Outline Support:**  
-  Each example row in a Scenario Outline is discovered as a separate test case. Run or debug all or individual examples directly from the Test Explorer or CodeLens.
+### 🛠️ **Advanced Debugging**
+- **Step-by-Step Debugging**: Debug individual Gherkin steps with full context
+- **Visual Breakpoints**: Set breakpoints directly on feature file steps
+- **Variable Inspection**: Inspect variables and application state during execution
+- **Conditional Breakpoints**: Advanced breakpoint conditions for complex scenarios
 
-- **Precise Example Execution:**  
-  When you run or debug a single example from a Scenario Outline (via Test Explorer), only that example is executed (not all examples), thanks to line-number-based execution.
+### 🏢 **Multi-Workspace Support**
+- **Workspace Management**: Handle multiple projects simultaneously
+- **Cross-Workspace Search**: Search tests across all open workspaces
+- **Parallel Execution**: Run tests across multiple workspaces in parallel
+- **Workspace Analytics**: Track performance and metrics across projects
 
-- **Refresh BDD Tests:**  
-  Use the `Refresh BDD Tests` command from the Command Palette or context menu to manually reload and rediscover all feature files and scenarios.
+### 🔄 **CI/CD Integration**
+- **GitHub Actions**: Built-in GitHub workflow management
+- **Workflow Triggers**: Trigger CI/CD pipelines directly from VS Code
+- **Report Integration**: Import and view CI/CD test results
+- **Status Monitoring**: Real-time workflow status updates
 
-- **Native Test Explorer Filtering:**  
-  Use the built-in filter/search box at the top of the Testing sidebar to quickly find scenarios, features, or examples by name or tag.  
-  > _Tip: Tags are searchable if included in the scenario label or description._
+### ⚙️ **Comprehensive Configuration**
+- **Settings UI**: User-friendly configuration interface
+- **Auto-Discovery**: Automatic project configuration detection
+- **Import/Export**: Backup and share configuration settings
+- **Validation**: Built-in configuration validation and error detection
 
-- **Configurable:**  
-  - Custom Playwright config and tsconfig paths
-  - Custom test and feature generation commands
-  - Tag-based test filtering
+## 📚 Documentation
 
-- **Status Bar Integration:**  
-  Quick access to run all BDD tests from the VS Code status bar.
+### 📖 **Complete Guides**
+- **[🚀 Features Guide](docs/FEATURES.md)** - Comprehensive overview of all features
+- **[⚙️ Settings Guide](docs/SETTINGS.md)** - Complete configuration documentation
+- **[🔧 Troubleshooting](docs/TROUBLESHOOTING.md)** - Solutions for common issues
+- **[🎨 UI Guide](docs/UI_GUIDE.md)** - User interface and navigation
+- **[🧪 Test Settings](docs/TEST_SETTINGS.md)** - Test-specific configuration
 
-- **Automatic Test Discovery:**  
-  Watches your feature files and updates the test tree on changes.
+### 🎯 **Quick Links**
+- [Installation & Setup](#installation--setup)
+- [Basic Usage](#basic-usage)
+- [AI Copilot Configuration](#ai-copilot-configuration)
+- [Advanced Features](#advanced-features)
+- [Contributing](#contributing)
 
-- **Rich Output:**  
-  View detailed logs and errors in the “Playwright BDD” output channel.
+## 🛠️ Installation & Setup
 
----
+### Prerequisites
+- **VS Code**: Version 1.101.0 or higher
+- **Node.js**: Version 16 or higher
+- **Playwright**: Installed in your project (`npm install @playwright/test`)
+- **Playwright BDD**: Optional, for enhanced BDD support (`npm install playwright-bdd`)
 
-## Getting Started
+### Installation Steps
 
-### 1. **Install the Extension**
+1. **Install Extension**:
+   ```bash
+   # Via VS Code Marketplace
+   code --install-extension rohitsakhawalkar.playwright-bdd-lens
+   ```
 
-Search for **“BDD Test Runner”** in the VS Code Extensions Marketplace and install.
+2. **Open Project**: Open a workspace containing `.feature` files
 
-### 2. **Project Setup**
+3. **Auto-Configuration**: The extension will automatically detect your project structure
 
-- Ensure you have [Playwright](https://playwright.dev/) and [playwright-bdd](https://github.com/vitalets/playwright-bdd) installed in your project.
-- Place your `.feature` files in the `features` folder (default) or configure a custom folder.
+4. **Manual Configuration** (if needed):
+   - Open Command Palette (`Ctrl+Shift+P`)
+   - Run "BDD Test Runner: Settings"
+   - Configure paths and preferences
 
-### 3. **Configuration (Optional)**
+### Project Structure
 
-You can customize extension behavior in your VS Code settings (`.vscode/settings.json`):
+```
+your-project/
+├── features/                 # Feature files (.feature)
+│   ├── login.feature
+│   └── dashboard.feature
+├── steps/                    # Step definitions
+│   ├── login.steps.ts
+│   └── common.steps.ts
+├── playwright.config.ts      # Playwright configuration
+└── package.json
+```
 
+## 🎮 Basic Usage
+
+### Running Tests
+
+#### Via Test Explorer
+1. Open the **Test Explorer** panel in VS Code
+2. Find the **"BDD Test Explorer"** section
+3. Click ▶️ to run individual tests or entire features
+4. View results in real-time
+
+#### Via Command Palette
+- `Ctrl+Shift+P` → "Run Playwright BDD Tests"
+- Choose specific scenarios or run all tests
+
+#### Via CodeLens
+- Open any `.feature` file
+- Click the "Run Scenario" links above each scenario
+
+### Debugging Tests
+
+#### Setting Breakpoints
+1. Open a `.feature` file
+2. Click in the gutter next to any step to set a breakpoint
+3. Run the test in debug mode
+4. Execution will pause at your breakpoint
+
+#### Step-by-Step Debugging
+1. Position cursor on a scenario
+2. Command Palette → "Start Step-by-Step Debugging"
+3. Step through each Gherkin step individually
+
+## 🤖 AI Copilot Configuration
+
+### Enabling AI Features
+
+1. **Access Settings**:
+   ```
+   Command Palette → "BDD Test Runner: Settings"
+   ```
+
+2. **Navigate to AI Copilot Section**:
+   - Enable "AI Copilot Integration"
+   - Configure confidence threshold (recommended: 60-70)
+   - Set maximum suggestions (recommended: 5)
+
+3. **Enable Specific Features**:
+   - ✅ Step Analysis
+   - ✅ Error Analysis  
+   - ✅ Performance Hints
+   - ✅ Smart Breakpoints
+
+### Using AI Assistant
+
+#### Interactive Debug Assistant
+```
+Command Palette → "🤖 Copilot Debug Assistant"
+```
+- Get context-aware debugging suggestions
+- Analyze current test execution state
+- Receive AI-powered recommendations
+
+#### Specific AI Commands
+- **`🤖 Suggest Smart Breakpoints`** - Strategic breakpoint placement
+- **`🤖 Suggest Step Fix`** - Fix missing step definitions
+- **`🤖 Analyze Test Failure`** - Intelligent error analysis
+- **`🤖 Improve Test`** - Performance and quality suggestions
+
+### AI Panel
+
+The **🤖 AI Copilot** panel in Test Explorer provides:
+- Quick access to all AI features
+- Real-time configuration status
+- Interactive buttons for common tasks
+- Contextual tips and guidance
+
+## 🔧 Advanced Features
+
+### Multi-Workspace Management
+
+#### Setting Up Multiple Workspaces
+1. Open multiple workspace folders in VS Code
+2. Extension automatically detects all workspaces
+3. Use "Show Workspaces" command to manage
+
+#### Cross-Workspace Operations
+- **Search**: `Command Palette → "Search Across Workspaces"`
+- **Run Tests**: `Command Palette → "Run Tests Across Workspaces"`
+- **Analytics**: `Command Palette → "Workspace Analytics"`
+
+### CI/CD Integration
+
+#### GitHub Actions Setup
+1. **Configure Token**:
+   - Settings → CI/CD Integration → GitHub Token
+   - Provide Personal Access Token with workflow permissions
+
+2. **Enable Integration**:
+   - Enable "CI/CD Integration"
+   - Set "Auto-Trigger Workflows" if desired
+
+3. **Manage Workflows**:
+   - `Command Palette → "Manage GitHub Workflows"`
+   - Create, trigger, and monitor workflows
+
+### Custom Configuration
+
+#### Environment-Specific Settings
+
+**Development**:
 ```json
 {
-  "playwrightBdd.configPath": "./playwright.config.ts",
-  "playwrightBdd.tsconfigPath": "--tsconfig=./tsconfig.json",
-  "playwrightBdd.tags": "",
-  "playwrightBdd.featureGenCommand": "npx bddgen --config=${configPath}",
-  "playwrightBdd.testCommand": "npx playwright test ${tsconfigArg} --config=${configPath} ${tagsArg}",
-  "playwrightBdd.debugCommand": "npx playwright test --debug ${testTarget} ${tsconfigArg} --config=${configPath} ${tagsArg}",
-  "playwrightBdd.enableFeatureGen": true,
-  "playwrightBdd.featureFolder": "features"
+  "playwrightBdd.tags": "@dev",
+  "playwrightBdd.execution.retryCount": 1,
+  "playwrightBdd.copilot.confidenceThreshold": 50
 }
 ```
 
+**Production**:
+```json
+{
+  "playwrightBdd.tags": "@smoke",
+  "playwrightBdd.execution.retryCount": 3,
+  "playwrightBdd.copilot.confidenceThreshold": 80
+}
+```
+
+#### Custom Commands
+```json
+{
+  "playwrightBdd.testCommand": "npx playwright test --config=custom.config.ts ${tagsArg}",
+  "playwrightBdd.featureGenCommand": "npm run generate-features"
+}
+```
+
+## 📊 Configuration Examples
+
+### Minimal Setup
+```json
+{
+  "playwrightBdd.configPath": "./playwright.config.ts",
+  "playwrightBdd.featureFolder": "features",
+  "playwrightBdd.stepsFolder": "steps"
+}
+```
+
+### Full Featured Setup
+```json
+{
+  "playwrightBdd.configPath": "./playwright.config.ts",
+  "playwrightBdd.featureFolder": "features",
+  "playwrightBdd.stepsFolder": "steps",
+  "playwrightBdd.autoDiscoverConfig": true,
+  "playwrightBdd.execution.retryCount": 2,
+  "playwrightBdd.execution.retryDelay": 2000,
+  "playwrightBdd.copilot.enabled": true,
+  "playwrightBdd.copilot.confidenceThreshold": 65,
+  "playwrightBdd.copilot.maxSuggestions": 5,
+  "playwrightBdd.ui.showCopilotPanel": true,
+  "playwrightBdd.cicd.enabled": true
+}
+```
+
+### Performance Optimized
+```json
+{
+  "playwrightBdd.ui.autoRefreshInterval": 0,
+  "playwrightBdd.copilot.maxSuggestions": 3,
+  "playwrightBdd.copilot.confidenceThreshold": 75,
+  "playwrightBdd.stepsFilePattern": "**/*.steps.{js,ts}"
+}
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+### Development Setup
+```bash
+# Clone the repository
+git clone https://github.com/Rohit5688/playwright-bdd-runner.git
+
+# Install dependencies
+cd playwright-bdd-runner
+npm install
+
+# Build the extension
+npm run compile
+
+# Run tests
+npm test
+```
+
+### Contributing Guidelines
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Areas for Contribution
+- 🐛 **Bug Fixes**: Help us identify and fix issues
+- ✨ **Features**: Implement new functionality
+- 📚 **Documentation**: Improve guides and examples
+- 🧪 **Testing**: Add test coverage
+- 🎨 **UI/UX**: Enhance user experience
+- 🤖 **AI Features**: Improve AI suggestions and analysis
+
+## 📝 Changelog
+
+### Version 0.4.0 (Latest)
+- ✨ **NEW**: AI Copilot integration with debugging assistance
+- ✨ **NEW**: Dedicated AI Copilot panel in Test Explorer
+- ✨ **NEW**: Comprehensive Settings UI with all configuration options
+- ✨ **NEW**: Retry mechanism with configurable count and delay
+- ✨ **NEW**: Import/Export settings functionality
+- 🛠️ **IMPROVED**: Enhanced error analysis and debugging suggestions
+- 🛠️ **IMPROVED**: Better test discovery performance with caching
+- 🛠️ **IMPROVED**: Multi-workspace support and management
+- 🛠️ **IMPROVED**: CI/CD integration with GitHub Actions
+
+See [CHANGELOG.md](CHANGELOG.md) for complete version history.
+
+## 🆘 Support & Help
+
+### Getting Help
+1. **Documentation**: Check our comprehensive [docs](docs/) directory
+2. **Settings Validation**: Use "Validate Configuration" in Settings UI
+3. **Output Panel**: Check the "Playwright BDD" output for error details
+4. **Issues**: Report bugs on [GitHub Issues](https://github.com/Rohit5688/playwright-bdd-runner/issues)
+
+### Common Issues & Solutions
+
+| Issue | Solution |
+|-------|----------|
+| Tests not discovered | Check `featureFolder` setting and file structure |
+| Step definitions not found | Verify `stepsFolder` and `stepsFilePattern` |
+| AI features not working | Ensure `copilot.enabled` is true |
+| Performance issues | Reduce `maxSuggestions` and disable `autoRefreshInterval` |
+
+### Community
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/Rohit5688/playwright-bdd-runner/discussions)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/Rohit5688/playwright-bdd-runner/issues)
+- 💡 **Feature Requests**: [GitHub Issues](https://github.com/Rohit5688/playwright-bdd-runner/issues)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Playwright Team**: For the excellent testing framework
+- **VS Code Team**: For the robust extension platform
+- **BDD Community**: For valuable feedback and contributions
+- **Contributors**: Everyone who has helped improve this extension
+
 ---
 
-## Usage
+**Made with ❤️ for the testing community**
 
-- **Test Explorer:**  
-  Open the Testing sidebar to view and run or debug discovered features and scenarios.  
-  Use the built-in filter/search box at the top of the Testing sidebar to quickly find scenarios, features, or examples by name or tag.
-
-- **Run/Debug Feature:**  
-  Right-click a feature file in the Test Explorer and select “Run Feature” or “Debug Feature” to execute or debug all scenarios and examples in that file.
-
-- **CodeLens:**  
-  Open a `.feature` file and click:
-  - “▶ Run Feature” or “🐞 Debug Feature” at the top of the file to run or debug all scenarios and examples in that feature.
-  - “▶ Run Scenario” or “🐞 Debug Scenario” above any scenario to run or debug just that scenario.
-
-- **Commands:**  
-  - `Run Playwright BDD Tests`
-  - `Run Feature`
-  - `Debug Feature`
-  - `Run Scenario`
-  - `Debug Scenario`
-  - `Run Scenario with Feature Generation`
-  - `Terminate Playwright BDD Tests`
-  - `Run Scenario or Feature (Dynamic)`
-  - `Refresh BDD Tests`
-
-  Access via Command Palette (`Cmd+Shift+P`) or right-click context menus.
-
-- **Status Bar:**  
-  Click the beaker icon to run all BDD tests.
-
-- **Output:**  
-  View logs and errors in the “Playwright BDD” output channel.
-
----
-
-### Scenario Outline Support
-
-- The extension fully supports [Scenario Outline](https://cucumber.io/docs/gherkin/reference/#scenario-outline) in your `.feature` files.
-- Each example row in a Scenario Outline is discovered as a separate test case in the VS Code Test Explorer.
-
-#### Running or Debugging Individual Examples
-
-- **From the Test Explorer:**  
-  Expand the Scenario Outline node to see all examples. Click the play or debug button next to any example to run or debug it individually.  
-  > **Only the selected example will run or debug, not the entire outline.**  
-  This is achieved by passing the correct line number to Playwright, ensuring precise execution.
-
-- **From CodeLens:**  
-  If you have CodeLens enabled, you’ll see “▶ Run Scenario” and “🐞 Debug Scenario” buttons above the Scenario Outline. These run or debug all examples for that outline.
-
-- **From Commands:**  
-  Use the Command Palette (`Cmd+Shift+P`) and select:
-  - `Run Scenario` or `Debug Scenario` to run or debug all examples for a scenario.
-  - `Run Scenario or Feature (Dynamic)` to run or debug a specific example by providing a tag or example name.
-
-- **Tag Filtering:**  
-  You can filter and run or debug specific examples by tagging them in your `.feature` file and setting the `playwrightBdd.tags` configuration.
-
----
-
-## Advanced
-
-- **Custom Test/Feature Generation Commands:**  
-  Use placeholders like `${configPath}`, `${tsconfigArg}`, `${tagsArg}`, and `${testTarget}` in your commands for dynamic substitution.
-
-- **Tag Filtering:**  
-  Set `playwrightBdd.tags` to filter scenarios or examples by tags (e.g., `@smoke`).
-
----
-
-## Contributing
-
-1. Fork the repo and clone.
-2. Run `npm install`.
-3. Open in VS Code and press `F5` to launch the extension development host.
-4. Submit pull requests for improvements or bug fixes!
-
----
-
-## License
-
-[MIT](LICENSE)
-
----
-
-## Credits
-
-- [Playwright](https://playwright.dev/)
-- [playwright-bdd](https://github.com/vitalets/playwright-bdd)
-- [VS Code Extension API](https://code.visualstudio.com/api)
-
----
-
-## Issues & Feedback
-
-Please [open an issue](https://github.com/Rohit5688/playwright-bdd-runner/issues) for bugs, feature requests, or questions.
+[⬆️ Back to top](#-playwright-bdd-test-runner)
