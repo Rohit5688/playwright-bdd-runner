@@ -1,6 +1,6 @@
 # 🎭 Playwright BDD Test Runner
 
-A comprehensive VS Code extension for running Playwright BDD tests with advanced debugging, AI-powered assistance, and multi-workspace support.
+A comprehensive VS Code extension for running Playwright BDD tests with advanced debugging and multi-workspace support.
 
 [![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://marketplace.visualstudio.com/items?itemName=rohitsakhawalkar.playwright-bdd-lens)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.101.0+-brightgreen.svg)](https://code.visualstudio.com/)
@@ -12,7 +12,7 @@ A comprehensive VS Code extension for running Playwright BDD tests with advanced
 2. **Open Your Project**: Open a workspace containing `.feature` files
 3. **Configure**: Access settings via Command Palette → "BDD Test Runner: Settings"
 4. **Run Tests**: Use the Test Explorer or Command Palette to execute your tests
-5. **Get AI Help**: Enable AI Copilot for intelligent debugging assistance
+5. **Start Testing**: Begin running and debugging your BDD tests
 
 ## ✨ Key Features
 
@@ -22,13 +22,6 @@ A comprehensive VS Code extension for running Playwright BDD tests with advanced
 - **Test Explorer Integration**: Native VS Code Test Explorer support
 - **Step Definition Linking**: Navigate from steps to their implementations
 - **Tag-Based Filtering**: Run specific test subsets using `@tag` annotations
-
-### 🤖 **AI-Powered Debugging** 
-- **Interactive Debug Assistant**: AI-powered debugging help with contextual suggestions
-- **Error Analysis**: Intelligent analysis of test failures with specific fix recommendations
-- **Smart Breakpoints**: AI-suggested strategic breakpoint placement
-- **Performance Optimization**: Automated suggestions for test performance improvements
-- **Code Generation**: Auto-generated fixes and step definitions
 
 ### 🛠️ **Advanced Debugging**
 - **Step-by-Step Debugging**: Debug individual Gherkin steps with full context
@@ -66,7 +59,6 @@ A comprehensive VS Code extension for running Playwright BDD tests with advanced
 ### 🎯 **Quick Links**
 - [Installation & Setup](#installation--setup)
 - [Basic Usage](#basic-usage)
-- [AI Copilot Configuration](#ai-copilot-configuration)
 - [Advanced Features](#advanced-features)
 - [Contributing](#contributing)
 
@@ -140,50 +132,6 @@ your-project/
 2. Command Palette → "Start Step-by-Step Debugging"
 3. Step through each Gherkin step individually
 
-## 🤖 AI Copilot Configuration
-
-### Enabling AI Features
-
-1. **Access Settings**:
-   ```
-   Command Palette → "BDD Test Runner: Settings"
-   ```
-
-2. **Navigate to AI Copilot Section**:
-   - Enable "AI Copilot Integration"
-   - Configure confidence threshold (recommended: 60-70)
-   - Set maximum suggestions (recommended: 5)
-
-3. **Enable Specific Features**:
-   - ✅ Step Analysis
-   - ✅ Error Analysis  
-   - ✅ Performance Hints
-   - ✅ Smart Breakpoints
-
-### Using AI Assistant
-
-#### Interactive Debug Assistant
-```
-Command Palette → "🤖 Copilot Debug Assistant"
-```
-- Get context-aware debugging suggestions
-- Analyze current test execution state
-- Receive AI-powered recommendations
-
-#### Specific AI Commands
-- **`🤖 Suggest Smart Breakpoints`** - Strategic breakpoint placement
-- **`🤖 Suggest Step Fix`** - Fix missing step definitions
-- **`🤖 Analyze Test Failure`** - Intelligent error analysis
-- **`🤖 Improve Test`** - Performance and quality suggestions
-
-### AI Panel
-
-The **🤖 AI Copilot** panel in Test Explorer provides:
-- Quick access to all AI features
-- Real-time configuration status
-- Interactive buttons for common tasks
-- Contextual tips and guidance
-
 ## 🔧 Advanced Features
 
 ### Multi-Workspace Management
@@ -221,8 +169,7 @@ The **🤖 AI Copilot** panel in Test Explorer provides:
 ```json
 {
   "playwrightBdd.tags": "@dev",
-  "playwrightBdd.execution.retryCount": 1,
-  "playwrightBdd.copilot.confidenceThreshold": 50
+  "playwrightBdd.execution.retryCount": 1
 }
 ```
 
@@ -230,8 +177,7 @@ The **🤖 AI Copilot** panel in Test Explorer provides:
 ```json
 {
   "playwrightBdd.tags": "@smoke",
-  "playwrightBdd.execution.retryCount": 3,
-  "playwrightBdd.copilot.confidenceThreshold": 80
+  "playwrightBdd.execution.retryCount": 3
 }
 ```
 
@@ -263,10 +209,6 @@ The **🤖 AI Copilot** panel in Test Explorer provides:
   "playwrightBdd.autoDiscoverConfig": true,
   "playwrightBdd.execution.retryCount": 2,
   "playwrightBdd.execution.retryDelay": 2000,
-  "playwrightBdd.copilot.enabled": true,
-  "playwrightBdd.copilot.confidenceThreshold": 65,
-  "playwrightBdd.copilot.maxSuggestions": 5,
-  "playwrightBdd.ui.showCopilotPanel": true,
   "playwrightBdd.cicd.enabled": true
 }
 ```
@@ -275,8 +217,6 @@ The **🤖 AI Copilot** panel in Test Explorer provides:
 ```json
 {
   "playwrightBdd.ui.autoRefreshInterval": 0,
-  "playwrightBdd.copilot.maxSuggestions": 3,
-  "playwrightBdd.copilot.confidenceThreshold": 75,
   "playwrightBdd.stepsFilePattern": "**/*.steps.{js,ts}"
 }
 ```
@@ -314,17 +254,14 @@ npm test
 - 📚 **Documentation**: Improve guides and examples
 - 🧪 **Testing**: Add test coverage
 - 🎨 **UI/UX**: Enhance user experience
-- 🤖 **AI Features**: Improve AI suggestions and analysis
 
 ## 📝 Changelog
 
 ### Version 0.4.0 (Latest)
-- ✨ **NEW**: AI Copilot integration with debugging assistance
-- ✨ **NEW**: Dedicated AI Copilot panel in Test Explorer
 - ✨ **NEW**: Comprehensive Settings UI with all configuration options
 - ✨ **NEW**: Retry mechanism with configurable count and delay
 - ✨ **NEW**: Import/Export settings functionality
-- 🛠️ **IMPROVED**: Enhanced error analysis and debugging suggestions
+- 🛠️ **IMPROVED**: Enhanced error analysis and debugging
 - 🛠️ **IMPROVED**: Better test discovery performance with caching
 - 🛠️ **IMPROVED**: Multi-workspace support and management
 - 🛠️ **IMPROVED**: CI/CD integration with GitHub Actions
@@ -345,8 +282,7 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 |-------|----------|
 | Tests not discovered | Check `featureFolder` setting and file structure |
 | Step definitions not found | Verify `stepsFolder` and `stepsFilePattern` |
-| AI features not working | Ensure `copilot.enabled` is true |
-| Performance issues | Reduce `maxSuggestions` and disable `autoRefreshInterval` |
+| Performance issues | Disable `autoRefreshInterval` for better performance |
 
 ### Community
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/Rohit5688/playwright-bdd-runner/discussions)

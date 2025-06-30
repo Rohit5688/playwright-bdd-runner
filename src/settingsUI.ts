@@ -207,97 +207,6 @@ export class SettingsUI {
         }
       },
 
-      // Copilot AI Integration
-      {
-        key: 'playwrightBdd.copilot.enabled',
-        label: 'Enable Copilot Integration',
-        type: 'boolean',
-        description: 'Enable AI-powered debugging assistance and suggestions',
-        defaultValue: true,
-        group: 'copilot'
-      },
-      {
-        key: 'playwrightBdd.copilot.autoShowSuggestions',
-        label: 'Auto-Show Suggestions',
-        type: 'boolean',
-        description: 'Automatically show suggestions when debugging sessions start',
-        defaultValue: true,
-        group: 'copilot'
-      },
-      {
-        key: 'playwrightBdd.copilot.confidenceThreshold',
-        label: 'Suggestion Confidence Threshold',
-        type: 'number',
-        description: 'Minimum confidence level (0-100) for showing suggestions',
-        defaultValue: 60,
-        group: 'copilot',
-        validation: (value: number) => {
-          if (value < 0 || value > 100) return 'Confidence threshold must be between 0 and 100';
-          return undefined;
-        }
-      },
-      {
-        key: 'playwrightBdd.copilot.maxSuggestions',
-        label: 'Maximum Suggestions',
-        type: 'number',
-        description: 'Maximum number of suggestions to show at once',
-        defaultValue: 5,
-        group: 'copilot',
-        validation: (value: number) => {
-          if (value < 1 || value > 20) return 'Maximum suggestions must be between 1 and 20';
-          return undefined;
-        }
-      },
-      {
-        key: 'playwrightBdd.copilot.enableStepAnalysis',
-        label: 'Enable Step Analysis',
-        type: 'boolean',
-        description: 'Analyze individual steps for potential issues and improvements',
-        defaultValue: true,
-        group: 'copilot'
-      },
-      {
-        key: 'playwrightBdd.copilot.enableErrorAnalysis',
-        label: 'Enable Error Analysis',
-        type: 'boolean',
-        description: 'Automatically analyze error messages and provide debugging suggestions',
-        defaultValue: true,
-        group: 'copilot'
-      },
-      {
-        key: 'playwrightBdd.copilot.enablePerformanceHints',
-        label: 'Enable Performance Hints',
-        type: 'boolean',
-        description: 'Show suggestions for test performance optimization',
-        defaultValue: true,
-        group: 'copilot'
-      },
-      {
-        key: 'playwrightBdd.copilot.smartBreakpoints',
-        label: 'Smart Breakpoint Suggestions',
-        type: 'boolean',
-        description: 'Enable intelligent breakpoint placement suggestions',
-        defaultValue: true,
-        group: 'copilot'
-      },
-      {
-        key: 'playwrightBdd.copilot.apiProvider',
-        label: 'AI API Provider',
-        type: 'dropdown',
-        description: 'AI service provider for advanced suggestions (future feature)',
-        defaultValue: 'local',
-        options: ['local', 'openai', 'github-copilot', 'custom'],
-        group: 'copilot'
-      },
-      {
-        key: 'playwrightBdd.copilot.customApiEndpoint',
-        label: 'Custom API Endpoint',
-        type: 'string',
-        description: 'Custom API endpoint for AI suggestions (when using custom provider)',
-        defaultValue: '',
-        placeholder: 'https://api.example.com/v1/suggestions',
-        group: 'copilot'
-      },
 
       // UI & Display
       {
@@ -332,14 +241,6 @@ export class SettingsUI {
         defaultValue: 0,
         group: 'ui'
       },
-      {
-        key: 'playwrightBdd.ui.showCopilotPanel',
-        label: 'Show Copilot Panel',
-        type: 'boolean',
-        description: 'Show the Copilot assistance panel in the test explorer',
-        defaultValue: true,
-        group: 'ui'
-      }
     ];
   }
 
@@ -365,12 +266,6 @@ export class SettingsUI {
         title: 'Discovery & Automation',
         description: 'Automatic discovery and detection settings',
         icon: 'search'
-      },
-      {
-        name: 'copilot',
-        title: '🤖 AI Copilot',
-        description: 'AI-powered debugging assistance and suggestions',
-        icon: 'robot'
       },
       {
         name: 'cicd',

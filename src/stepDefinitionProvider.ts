@@ -191,16 +191,10 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
   }
 
   findMatchingStep(stepText: string): StepDefinition | undefined {
-    // Enhanced logging for debugging
-    this.outputChannel.appendLine(`🔍 Looking for step: "${stepText}"`);
-    
     return this.stepDefinitions.find(step => {
       try {
-        this.outputChannel.appendLine(`  🎯 Testing pattern: "${step.pattern}"`);
-        
         // Strategy 1: Direct string comparison (for exact matches)
         if (stepText.toLowerCase() === step.pattern.toLowerCase()) {
-          this.outputChannel.appendLine(`  ✅ Direct match found!`);
           return true;
         }
         
@@ -209,22 +203,22 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
         
         // Handle scenario outline parameters first (most specific)
         enhancedPattern = enhancedPattern
-          .replace(/'<[^>]+>'/g, '\'[^\']*\'')    // '<param>' -> match any quoted content
-          .replace(/"<[^>]+>"/g, '"[^"]*"')       // "<param>" -> match any quoted content
-          .replace(/<[^>]+>/g, '[^\\s]+');        // <param> -> match any non-space content
+          .replace(/'<[^>]+>'/g, "'[^']*'")    // '<param>' -> match any quoted content
+          .replace(/"<[^>]+>"/g, '"[^"]*"')    // "<param>" -> match any quoted content
+          .replace(/<[^>]+>/g, '[^\\s]+');     // <param> -> match any non-space content
         
-        // Handle Cucumber parameters
+        // Handle Cucumber parameters - fixed regex patterns
         enhancedPattern = enhancedPattern
-          .replace(/\{string\}/g, '["\']([^"\']*)["\']')  // {string} -> match quoted strings
-          .replace(/\{int\}/g, '\\d+')                     // {int} -> match numbers
-          .replace(/\{float\}/g, '\\d+\\.?\\d*')           // {float} -> match decimals
-          .replace(/\{word\}/g, '[a-zA-Z0-9_]+')           // {word} -> match word characters
-          .replace(/\{[^}]+\}/g, '[^\\s]+');               // {anyParam} -> match non-space
+          .replace(/\{string\}/g, '(?:["\'][^"\']*["\'])')  // {string} -> match quoted strings
+          .replace(/\{int\}/g, '\\d+')                      // {int} -> match numbers
+          .replace(/\{float\}/g, '\\d+\\.?\\d*')            // {float} -> match decimals
+          .replace(/\{word\}/g, '[a-zA-Z0-9_]+')            // {word} -> match word characters
+          .replace(/\{[^}]+\}/g, '[^\\s]+');                // {anyParam} -> match non-space
         
-        // Handle quoted strings (API endpoints, JSON, etc.)
+        // Handle quoted strings (API endpoints, JSON, etc.) - fixed patterns
         enhancedPattern = enhancedPattern
-          .replace(/'[^']*'/g, '\'[^\']*\'')       // Match any single-quoted string
-          .replace(/"[^"]*"/g, '"[^"]*"');         // Match any double-quoted string
+          .replace(/'[^']*'/g, "'[^']*'")       // Match any single-quoted string
+          .replace(/"[^"]*"/g, '"[^"]*"');      // Match any double-quoted string
         
         // Normalize whitespace
         enhancedPattern = enhancedPattern.replace(/\s+/g, '\\s+');
@@ -232,31 +226,27 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
         try {
           const regex = new RegExp(`^${enhancedPattern}$`, 'i');
           if (regex.test(stepText)) {
-            this.outputChannel.appendLine(`  ✅ Enhanced pattern match: "${enhancedPattern}"`);
             return true;
           }
         } catch (regexError) {
-          this.outputChannel.appendLine(`  ⚠️ Enhanced regex failed: ${regexError}`);
+          // Silently continue to fallback methods
         }
         
         // Strategy 3: Fuzzy matching for API steps with parameters
         const fuzzyMatch = this.performApiAwareFuzzyMatch(stepText, step.pattern);
         if (fuzzyMatch) {
-          this.outputChannel.appendLine(`  ✅ API-aware fuzzy match found!`);
           return true;
         }
         
         // Strategy 4: Structural matching (ignore parameter values, focus on structure)
         const structuralMatch = this.performStructuralMatch(stepText, step.pattern);
         if (structuralMatch) {
-          this.outputChannel.appendLine(`  ✅ Structural match found!`);
           return true;
         }
         
         return false;
         
       } catch (error) {
-        this.outputChannel.appendLine(`  ❌ Error matching "${step.pattern}": ${error}`);
         return false;
       }
     });

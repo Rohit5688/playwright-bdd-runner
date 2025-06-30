@@ -8,7 +8,6 @@ Welcome to the Playwright BDD Test Runner! This guide will help you get up and r
 - [Installation](#installation)
 - [First Setup](#first-setup)
 - [Running Your First Test](#running-your-first-test)
-- [Exploring AI Features](#exploring-ai-features)
 - [Next Steps](#next-steps)
 
 ## Prerequisites
@@ -143,51 +142,6 @@ The extension will automatically detect your project structure!
 2. **Look for** "Run Scenario" links above each scenario
 3. **Click** to run immediately
 
-## Exploring AI Features
-
-### Enable AI Copilot
-
-1. **Open Settings**:
-   ```
-   Command Palette → "BDD Test Runner: Settings"
-   ```
-
-2. **Navigate to "🤖 AI Copilot" section**
-
-3. **Configure**:
-   - ✅ Enable "AI Copilot Integration"
-   - Set "Confidence Threshold" to 60
-   - Set "Maximum Suggestions" to 5
-   - Enable all feature toggles
-
-### Use AI Assistant
-
-#### Interactive Debug Assistant
-1. **Position cursor** in any `.feature` file
-2. **Command Palette** → "🤖 Copilot Debug Assistant"
-3. **Explore** the interactive suggestions
-
-#### AI Panel
-1. **Open Test Explorer**
-2. **Find "🤖 AI Copilot" panel**
-3. **Try the quick action buttons**:
-   - 🔍 Debug Assistant
-   - 🎯 Smart Breakpoints
-   - 💡 Fix Steps
-   - 🔬 Analyze Failure
-   - ⚡ Improve Tests
-
-### Try Smart Features
-
-#### Smart Breakpoints
-1. **Open** a `.feature` file
-2. **Command Palette** → "🤖 Suggest Smart Breakpoints"
-3. **Review** AI suggestions for optimal breakpoint placement
-
-#### Error Analysis
-1. **Run a test** that fails
-2. **Command Palette** → "🤖 Analyze Test Failure"
-3. **Get** specific recommendations for fixing the issue
 
 ## Next Steps
 
@@ -218,7 +172,6 @@ The extension will automatically detect your project structure!
 2. **Optimize Performance**:
    - Configure retry mechanisms
    - Set up intelligent caching
-   - Tune AI confidence thresholds
 
 ### Learn More
 
@@ -237,7 +190,6 @@ The extension will automatically detect your project structure!
 ### Best Practices
 1. **Use meaningful scenario names** for better test organization
 2. **Enable auto-discovery** for effortless configuration
-3. **Start with default AI settings** and adjust based on your needs
 4. **Use tags** (`@smoke`, `@regression`) for test filtering
 5. **Regular validation** of settings to catch issues early
 
@@ -277,15 +229,8 @@ Scenario Outline: Multiple user types
 2. Check `stepsFilePattern` configuration
 3. Use "Show Step Definitions" command
 
-### AI Not Working?
-1. Ensure `copilot.enabled` is true
-2. Check confidence threshold (try lowering it)
-3. Verify you're in a `.feature` file
-
 ### Performance Issues?
 1. Disable `autoRefreshInterval`
-2. Reduce `maxSuggestions`
-3. Increase `confidenceThreshold`
 
 ## Getting Help
 
@@ -296,4 +241,4 @@ Scenario Outline: Multiple user types
 
 ---
 
-**You're all set!** Start writing tests and let the AI help you debug and optimize them. Happy testing! 🎉
+**You're all set!** Start writing tests and enjoy the enhanced debugging experience. Happy testing! 🎉

@@ -7,7 +7,6 @@ This document provides a comprehensive overview of all features available in the
 - [Core Features](#core-features)
 - [Test Discovery & Execution](#test-discovery--execution)
 - [Debugging Features](#debugging-features)
-- [AI Copilot Integration](#ai-copilot-integration)
 - [Multi-Workspace Support](#multi-workspace-support)
 - [CI/CD Integration](#cicd-integration)
 - [Test Management](#test-management)
@@ -63,29 +62,6 @@ This document provides a comprehensive overview of all features available in the
 - **Breakpoint Persistence**: Breakpoints saved across sessions
 - **Bulk Operations**: Clear all breakpoints or manage multiple at once
 - **Context-Sensitive**: Breakpoints with step-specific context
-
-## AI Copilot Integration
-
-### 🤖 AI-Powered Assistance
-- **Debug Assistant**: Interactive AI debugging help
-- **Error Analysis**: Intelligent analysis of test failures
-- **Step Suggestions**: AI-powered step definition suggestions
-- **Performance Optimization**: Automated performance improvement suggestions
-- **Smart Breakpoints**: AI-suggested strategic breakpoint placement
-
-### 💡 Smart Suggestions
-- **Context-Aware**: Suggestions based on current test context
-- **Confidence Scoring**: Each suggestion includes confidence level
-- **Multiple Options**: Various suggestions for different approaches
-- **Code Generation**: Auto-generated code fixes and improvements
-- **Pattern Recognition**: Recognizes common testing patterns and issues
-
-### 🎯 Specialized Analysis
-- **Error Pattern Recognition**: Identifies common Playwright errors
-- **Performance Analysis**: Detects performance bottlenecks
-- **Best Practices**: Suggests testing best practices
-- **Code Quality**: Identifies maintainability improvements
-- **Accessibility**: Accessibility testing suggestions
 
 ## Multi-Workspace Support
 
@@ -166,23 +142,21 @@ This document provides a comprehensive overview of all features available in the
 
 ### 🎨 User Interface
 - **Test Explorer**: Enhanced test explorer with filtering
-- **Copilot Panel**: Dedicated AI assistance panel
 - **Settings Panel**: Comprehensive settings management
 - **Progress Indicators**: Visual progress for long-running operations
 - **Interactive Dialogs**: User-friendly configuration dialogs
 
 ## Feature Matrix
 
-| Feature Category | Basic | Advanced | AI-Powered |
-|------------------|-------|----------|------------|
-| Test Discovery | ✅ | ✅ | ✅ |
-| Test Execution | ✅ | ✅ | ✅ |
-| Debugging | ✅ | ✅ | ✅ |
-| CI/CD Integration | ❌ | ✅ | ✅ |
-| Multi-Workspace | ❌ | ✅ | ✅ |
-| AI Assistance | ❌ | ❌ | ✅ |
-| Advanced Analytics | ❌ | ✅ | ✅ |
-| Auto-Generation | ❌ | ✅ | ✅ |
+| Feature Category | Basic | Advanced |
+|------------------|-------|----------|
+| Test Discovery | ✅ | ✅ |
+| Test Execution | ✅ | ✅ |
+| Debugging | ✅ | ✅ |
+| CI/CD Integration | ❌ | ✅ |
+| Multi-Workspace | ❌ | ✅ |
+| Advanced Analytics | ❌ | ✅ |
+| Auto-Generation | ❌ | ✅ |
 
 ## Getting Started
 
@@ -191,8 +165,7 @@ To explore these features:
 1. **Install the Extension**: Install from VS Code Marketplace
 2. **Open a Project**: Open a project with `.feature` files
 3. **Configure Settings**: Use the Settings UI to customize behavior
-4. **Enable AI Features**: Configure the AI Copilot for enhanced assistance
-5. **Explore Test Explorer**: Use the enhanced test explorer for test management
+4. **Explore Test Explorer**: Use the enhanced test explorer for test management
 
 ## Performance Features
 

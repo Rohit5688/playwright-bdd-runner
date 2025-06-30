@@ -8,7 +8,6 @@ This document provides comprehensive information about configuring the Playwrigh
 - [Settings UI](#settings-ui)
 - [Core Configuration](#core-configuration)
 - [Test Execution Settings](#test-execution-settings)
-- [AI Copilot Configuration](#ai-copilot-configuration)
 - [UI & Display Settings](#ui--display-settings)
 - [Discovery & Automation](#discovery--automation)
 - [CI/CD Integration](#cicd-integration)
@@ -39,7 +38,6 @@ The extension provides a comprehensive settings interface with organized section
 ### Settings Sections
 - **Core Configuration**: Essential project setup
 - **Test Execution**: Test running and retry configuration
-- **🤖 AI Copilot**: AI-powered assistance settings
 - **Discovery & Automation**: Auto-discovery features
 - **CI/CD Integration**: GitHub Actions and workflow settings
 - **User Interface**: UI customization options
@@ -142,79 +140,6 @@ The extension provides a comprehensive settings interface with organized section
   - `2000` for moderate delay
   - `5000` for slower environments
 
-## AI Copilot Configuration
-
-### Core AI Settings
-
-#### `playwrightBdd.copilot.enabled`
-- **Type**: Boolean
-- **Default**: `true`
-- **Description**: Enable AI-powered debugging assistance
-- **Impact**: Controls all AI features in the extension
-
-#### `playwrightBdd.copilot.autoShowSuggestions`
-- **Type**: Boolean
-- **Default**: `true`
-- **Description**: Automatically show suggestions when debugging starts
-- **Behavior**: Shows copilot panel when debug sessions begin
-
-### Suggestion Configuration
-
-#### `playwrightBdd.copilot.confidenceThreshold`
-- **Type**: Number (0-100)
-- **Default**: `60`
-- **Description**: Minimum confidence level for showing suggestions
-- **Usage**:
-  - `30-50`: Show more suggestions (some may be less relevant)
-  - `60-70`: Balanced approach (recommended)
-  - `80-90`: Only high-confidence suggestions
-
-#### `playwrightBdd.copilot.maxSuggestions`
-- **Type**: Number (1-20)
-- **Default**: `5`
-- **Description**: Maximum number of suggestions to display
-- **Performance**: Lower values improve UI responsiveness
-
-### Feature Toggles
-
-#### `playwrightBdd.copilot.enableStepAnalysis`
-- **Type**: Boolean
-- **Default**: `true`
-- **Description**: Analyze individual steps for issues and improvements
-
-#### `playwrightBdd.copilot.enableErrorAnalysis`
-- **Type**: Boolean
-- **Default**: `true`
-- **Description**: Automatically analyze error messages
-
-#### `playwrightBdd.copilot.enablePerformanceHints`
-- **Type**: Boolean
-- **Default**: `true`
-- **Description**: Show performance optimization suggestions
-
-#### `playwrightBdd.copilot.smartBreakpoints`
-- **Type**: Boolean
-- **Default**: `true`
-- **Description**: Enable intelligent breakpoint placement suggestions
-
-### AI Provider Configuration
-
-#### `playwrightBdd.copilot.apiProvider`
-- **Type**: Dropdown
-- **Default**: `local`
-- **Options**:
-  - `local`: Built-in rule-based suggestions
-  - `openai`: OpenAI API integration (future)
-  - `github-copilot`: GitHub Copilot integration (future)
-  - `custom`: Custom API endpoint
-
-#### `playwrightBdd.copilot.customApiEndpoint`
-- **Type**: String (URL)
-- **Default**: `""` (empty)
-- **Description**: Custom API endpoint for AI suggestions
-- **Example**: `https://api.example.com/v1/suggestions`
-- **Required When**: `apiProvider` is set to `custom`
-
 ## UI & Display Settings
 
 ### Test Explorer
@@ -233,14 +158,6 @@ The extension provides a comprehensive settings interface with organized section
 - **Type**: Boolean
 - **Default**: `true`
 - **Description**: Enable test execution history tracking
-
-### Copilot Panel
-
-#### `playwrightBdd.ui.showCopilotPanel`
-- **Type**: Boolean
-- **Default**: `true`
-- **Description**: Show the AI Copilot panel in test explorer
-- **Impact**: Hides/shows the entire copilot UI panel
 
 ### Performance
 
@@ -325,8 +242,7 @@ Create different configurations for different environments:
 ```json
 {
   "playwrightBdd.tags": "@dev",
-  "playwrightBdd.execution.retryCount": 1,
-  "playwrightBdd.copilot.confidenceThreshold": 50
+  "playwrightBdd.execution.retryCount": 1
 }
 ```
 
@@ -334,8 +250,7 @@ Create different configurations for different environments:
 ```json
 {
   "playwrightBdd.tags": "@smoke",
-  "playwrightBdd.execution.retryCount": 3,
-  "playwrightBdd.copilot.confidenceThreshold": 80
+  "playwrightBdd.execution.retryCount": 3
 }
 ```
 
@@ -343,8 +258,6 @@ Create different configurations for different environments:
 
 For large projects:
 - Set `autoRefreshInterval` to 0
-- Increase `confidenceThreshold` to reduce AI processing
-- Reduce `maxSuggestions` for faster UI
 - Use specific `stepsFilePattern` to limit file scanning
 
 ## Import/Export Settings
@@ -373,8 +286,6 @@ For large projects:
     "playwrightBdd.configPath": "./playwright.config.ts",
     "playwrightBdd.featureFolder": "features",
     "playwrightBdd.stepsFolder": "steps",
-    "playwrightBdd.copilot.enabled": true,
-    "playwrightBdd.copilot.confidenceThreshold": 70,
     "playwrightBdd.execution.retryCount": 2
   }
 }
@@ -404,10 +315,6 @@ The extension automatically validates:
 - **Problem**: Steps not linking to definitions
 - **Solution**: Verify `stepsFolder` and `stepsFilePattern` settings
 
-#### AI Features Not Working
-- **Problem**: Copilot not providing suggestions
-- **Solution**: Ensure `copilot.enabled` is true and check confidence threshold
-
 ### Getting Help
 
 If you encounter issues:
@@ -424,8 +331,6 @@ If you encounter issues:
 {
   "playwrightBdd.autoDiscoverConfig": true,
   "playwrightBdd.execution.retryCount": 2,
-  "playwrightBdd.copilot.enabled": true,
-  "playwrightBdd.copilot.confidenceThreshold": 65,
   "playwrightBdd.ui.showExecutionHistory": true
 }
 ```
@@ -434,9 +339,7 @@ If you encounter issues:
 
 ```json
 {
-  "playwrightBdd.ui.autoRefreshInterval": 0,
-  "playwrightBdd.copilot.maxSuggestions": 3,
-  "playwrightBdd.copilot.confidenceThreshold": 75
+  "playwrightBdd.ui.autoRefreshInterval": 0
 }
 ```
 

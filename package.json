@@ -254,29 +254,49 @@
         "icon": "$(pulse)"
       },
       {
-        "command": "playwright-bdd.copilotDebugAssist",
-        "title": "🤖 Copilot Debug Assistant",
-        "icon": "$(robot)"
+        "command": "playwright-bdd.insertStepTemplate",
+        "title": "Insert Step Template",
+        "icon": "$(add)"
       },
       {
-        "command": "playwright-bdd.copilotSuggestBreakpoints",
-        "title": "🤖 Suggest Smart Breakpoints",
-        "icon": "$(debug-breakpoint)"
+        "command": "playwright-bdd.insertScenarioTemplate",
+        "title": "Insert Scenario Template",
+        "icon": "$(file-add)"
       },
       {
-        "command": "playwright-bdd.copilotSuggestStepFix",
-        "title": "🤖 Suggest Step Fix",
-        "icon": "$(lightbulb)"
+        "command": "playwright-bdd.validateFeatureStructure",
+        "title": "Validate Feature Structure",
+        "icon": "$(check)"
       },
       {
-        "command": "playwright-bdd.copilotAnalyzeFailure",
-        "title": "🤖 Analyze Test Failure",
+        "command": "playwright-bdd.formatFeatureFile",
+        "title": "Format Feature File",
+        "icon": "$(code)"
+      },
+      {
+        "command": "playwright-bdd.extractScenarioOutline",
+        "title": "Extract Scenario Outline",
+        "icon": "$(symbol-variable)"
+      },
+      {
+        "command": "playwright-bdd.findStepDefinition",
+        "title": "Find Step Definition",
         "icon": "$(search)"
       },
       {
-        "command": "playwright-bdd.copilotImproveTest",
-        "title": "🤖 Improve Test",
-        "icon": "$(star)"
+        "command": "playwright-bdd.runFeature",
+        "title": "Run Feature",
+        "icon": "$(play)"
+      },
+      {
+        "command": "playwright-bdd.generateStepDefinitions",
+        "title": "Generate Step Definitions",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "playwright-bdd.formatTable",
+        "title": "Format Table",
+        "icon": "$(table)"
       }
     ],
     "configuration": {
@@ -392,66 +412,6 @@
           "minimum": 100,
           "maximum": 30000,
           "description": "Delay between retry attempts in milliseconds"
-        },
-        "playwrightBdd.copilot.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable AI-powered debugging assistance and suggestions"
-        },
-        "playwrightBdd.copilot.autoShowSuggestions": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically show suggestions when debugging sessions start"
-        },
-        "playwrightBdd.copilot.confidenceThreshold": {
-          "type": "number",
-          "default": 60,
-          "minimum": 0,
-          "maximum": 100,
-          "description": "Minimum confidence level (0-100) for showing suggestions"
-        },
-        "playwrightBdd.copilot.maxSuggestions": {
-          "type": "number",
-          "default": 5,
-          "minimum": 1,
-          "maximum": 20,
-          "description": "Maximum number of suggestions to show at once"
-        },
-        "playwrightBdd.copilot.enableStepAnalysis": {
-          "type": "boolean",
-          "default": true,
-          "description": "Analyze individual steps for potential issues and improvements"
-        },
-        "playwrightBdd.copilot.enableErrorAnalysis": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically analyze error messages and provide debugging suggestions"
-        },
-        "playwrightBdd.copilot.enablePerformanceHints": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show suggestions for test performance optimization"
-        },
-        "playwrightBdd.copilot.smartBreakpoints": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable intelligent breakpoint placement suggestions"
-        },
-        "playwrightBdd.copilot.apiProvider": {
-          "type": "string",
-          "enum": ["local", "openai", "github-copilot", "custom"],
-          "default": "local",
-          "description": "AI service provider for advanced suggestions (future feature)"
-        },
-        "playwrightBdd.copilot.customApiEndpoint": {
-          "type": "string",
-          "default": "",
-          "description": "Custom API endpoint for AI suggestions (when using custom provider)"
-        },
-        "playwrightBdd.ui.showCopilotPanel": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show the Copilot assistance panel in the test explorer"
         }
       }
     },
@@ -463,17 +423,26 @@
         }
       ]
     },
+    "languages": [
+      {
+        "id": "feature",
+        "aliases": ["Gherkin", "gherkin", "Cucumber", "cucumber"],
+        "extensions": [".feature"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "feature",
+        "scopeName": "text.gherkin.feature",
+        "path": "./syntaxes/gherkin.tmGrammar.json"
+      }
+    ],
     "views": {
       "test": [
         {
           "id": "playwrightBddTests",
           "name": "BDD Test Explorer",
-          "when": "workspaceFolderCount > 0"
-        },
-        {
-          "id": "playwrightBddCopilot",
-          "name": "🤖 AI Copilot",
-          "type": "webview",
           "when": "workspaceFolderCount > 0"
         }
       ]
@@ -579,6 +548,33 @@
         {
           "command": "playwright-bdd.treeView.debugSelected",
           "group": "inline@2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "playwright-bdd.insertStepTemplate",
+          "when": "resourceExtname == .feature",
+          "group": "bdd@1"
+        },
+        {
+          "command": "playwright-bdd.insertScenarioTemplate",
+          "when": "resourceExtname == .feature",
+          "group": "bdd@2"
+        },
+        {
+          "command": "playwright-bdd.validateFeatureStructure",
+          "when": "resourceExtname == .feature",
+          "group": "bdd@3"
+        },
+        {
+          "command": "playwright-bdd.formatFeatureFile",
+          "when": "resourceExtname == .feature",
+          "group": "bdd@4"
+        },
+        {
+          "command": "playwright-bdd.generateStepDefinitions",
+          "when": "resourceExtname == .feature",
+          "group": "bdd@5"
         }
       ]
     }

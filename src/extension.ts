@@ -15,8 +15,6 @@ import { CICDIntegration } from './cicd/cicdIntegration';
 import { ReportViewer } from './cicd/reportViewer';
 import { TestExplorerUI } from './testExplorerUI';
 import { SettingsUI } from './settingsUI';
-import { CopilotIntegrationService } from './copilotIntegration';
-import { CopilotPanelProvider } from './copilotPanel';
 
 export async function activate(context: vscode.ExtensionContext) {
   const controller = vscode.tests.createTestController('playwrightBdd', 'Playwright BDD Tests');
@@ -442,29 +440,8 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(settingsUI);
   }
 
-  // Initialize Copilot Integration Service
-  const copilotService = new CopilotIntegrationService(outputChannel);
-  copilotService.registerCommands(context);
-  
-  // Initialize copilot integration with debugging tools and step definitions
-  if (debuggingTools && stepDefinitionProvider) {
-    copilotService.initialize(debuggingTools, stepDefinitionProvider);
-  }
-
-  // Register Copilot Panel Provider
-  const copilotPanelProvider = new CopilotPanelProvider(context.extensionUri, outputChannel, copilotService);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(CopilotPanelProvider.viewType, copilotPanelProvider)
-  );
-
-  // Refresh copilot panel when configuration changes
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration(e => {
-      if (e.affectsConfiguration('playwrightBdd.copilot') || e.affectsConfiguration('playwrightBdd.ui.showCopilotPanel')) {
-        copilotPanelProvider.refresh();
-      }
-    })
-  );
+  // All Copilot functionality has been removed from the extension
+  outputChannel.appendLine('✅ BDD Test Runner initialized without AI/Copilot features');
 
   // Register debugging tools
   if (debuggingTools) {
@@ -798,9 +775,20 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Add step creation wizard commands
+  // Add step creation commands
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.createStepDefinition', async () => {
+      if (!stepCreationWizard) {
+        vscode.window.showWarningMessage('Step creation requires an open workspace.');
+        return;
+      }
+
+      await stepCreationWizard.launchWizard();
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.launchStepWizard', async () => {
       if (!stepCreationWizard) {
         vscode.window.showWarningMessage('Step creation requires an open workspace.');
         return;
@@ -1535,6 +1523,7 @@ export async function activate(context: vscode.ExtensionContext) {
   statusBarItem.tooltip = 'Run all Playwright BDD tests';
   statusBarItem.show();
   context.subscriptions.push(statusBarItem);
+
 
   const stopButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
   stopButton.text = '$(debug-stop) Stop BDD Tests';
