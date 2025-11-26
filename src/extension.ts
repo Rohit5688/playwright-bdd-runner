@@ -6,6 +6,7 @@ import { StepDefinitionProvider } from './stepDefinitionProvider';
 import { TestDiscoveryCache } from './testCache';
 import { TestSearchProvider } from './testSearchProvider';
 import { BDDHoverProvider } from './hoverProvider';
+import { ExecutionHistoryTracker } from './executionHistoryTracker';
 import { AutoDiscoveryService } from './autoDiscovery';
 import { TestQueueManager } from './queueManager';
 import { StepCreationWizard } from './stepCreationWizard';
@@ -15,6 +16,7 @@ import { CICDIntegration } from './cicd/cicdIntegration';
 import { ReportViewer } from './cicd/reportViewer';
 import { TestExplorerUI } from './testExplorerUI';
 import { SettingsUI } from './settingsUI';
+import { SmartCodeGenerator } from './smartCodeGenerator';
 
 export async function activate(context: vscode.ExtensionContext) {
   const controller = vscode.tests.createTestController('playwrightBdd', 'Playwright BDD Tests');
@@ -36,7 +38,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const config = vscode.workspace.getConfiguration('playwrightBdd');
     const configPath = config.get<string>('configPath', './playwright.config.ts');
     const workspaceFolders = vscode.workspace.workspaceFolders;
-    
+
     if (!workspaceFolders) {
       vscode.window.showWarningMessage('Playwright BDD: No workspace folder detected. Extension functionality may be limited.');
       return false;
@@ -53,7 +55,7 @@ export async function activate(context: vscode.ExtensionContext) {
     } catch (error) {
       outputChannel.appendLine(`Warning: Could not validate configuration: ${error}`);
     }
-    
+
     return true;
   };
 
@@ -72,10 +74,10 @@ export async function activate(context: vscode.ExtensionContext) {
     try {
       outputChannel.appendLine('Starting test discovery...');
       const startTime = Date.now();
-      
+
       controller.items.replace([]);
       const files = await vscode.workspace.findFiles(`${featureFolder}/**/*.feature`);
-      
+
       if (files.length === 0) {
         outputChannel.appendLine(`No feature files found in ${featureFolder}. Check your featureFolder configuration.`);
         vscode.window.showInformationMessage(`No .feature files found in '${featureFolder}' folder.`);
@@ -83,7 +85,7 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       outputChannel.appendLine(`Found ${files.length} feature file(s). Processing with caching...`);
-      
+
       if (forceRefresh) {
         testCache.clearCache();
         outputChannel.appendLine('Cache cleared - processing all files');
@@ -107,13 +109,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
           // Process file normally
           const testItem = await processFeatureFile(file, controller);
-          
+
           // Update cache with newly processed item
           if (testItem) {
             const cachedItem = testCache.createCachedItem(testItem);
             await testCache.updateCache(file, cachedItem);
           }
-          
+
           return testItem;
         } catch (error) {
           errorHandler(`Processing feature file ${file.fsPath}`, error as Error);
@@ -123,16 +125,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
       // Use incremental discovery
       const result = await testCache.incrementalDiscovery(files, processFeatureFileWithCache);
-      
+
       const endTime = Date.now();
       const duration = endTime - startTime;
       const stats = testCache.getCacheStats();
-      
+
       outputChannel.appendLine(
         `✅ Discovery completed in ${duration}ms: ${result.processed} processed, ${result.fromCache} from cache`
       );
       outputChannel.appendLine(`📊 Cache stats: ${stats.totalFeatures} cached features`);
-      
+
     } catch (error) {
       errorHandler('Test Discovery', error as Error);
       // Fallback: try to maintain any existing test items
@@ -144,7 +146,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const processFeatureFile = async (file: vscode.Uri, controller: vscode.TestController): Promise<vscode.TestItem | null> => {
     try {
       const content = (await vscode.workspace.fs.readFile(file)).toString();
-      
+
       if (!content.trim()) {
         outputChannel.appendLine(`Warning: Empty feature file ${file.fsPath}`);
         return null;
@@ -154,7 +156,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       // Extract the feature title from the file content
       const featureMatch = content.match(/^\s*Feature:\s*(.+)/m);
-      
+
       if (!featureMatch) {
         outputChannel.appendLine(`Warning: No Feature declaration found in ${file.fsPath}`);
         return null;
@@ -174,7 +176,7 @@ export async function activate(context: vscode.ExtensionContext) {
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const scenarioMatch = line.match(/^\s*Scenario(?: Outline)?:\s*(.+)/);
-        
+
         if (scenarioMatch) {
           const scenarioName = scenarioMatch[1].trim();
           const scenarioId = `${file.fsPath}::${scenarioName}`;
@@ -210,11 +212,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
               const exampleData = Object.fromEntries(headers.map((h, idx) => [h, cells[idx] || '']));
               let exampleLabel = scenarioTemplate;
-              
+
               for (const [key, value] of Object.entries(exampleData)) {
                 exampleLabel = exampleLabel.replace(new RegExp(`<${key}>`, 'g'), value);
               }
-              
+
               if (currentScenario) {
                 const exampleId = `${currentScenario.id}::${exampleLabel}`;
                 const exampleItem = controller.createTestItem(exampleId, exampleLabel, file);
@@ -230,7 +232,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       outputChannel.appendLine(`Processed ${path.basename(file.fsPath)}: ${scenarioCount} scenario(s)`);
       return testItem;
-      
+
     } catch (error) {
       throw new Error(`Failed to process feature file: ${error}`);
     }
@@ -385,21 +387,25 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Initialize Step Definition Provider
   const stepDefinitionProvider = new StepDefinitionProvider(outputChannel);
-  
+
   // Initialize Test Search Provider
   const testSearchProvider = new TestSearchProvider(outputChannel);
-  
+
+  // Initialize Execution History Tracker
+  const executionHistoryTracker = new ExecutionHistoryTracker(context, outputChannel);
+  await executionHistoryTracker.initialize();
+
   // Initialize Hover Provider
-  const hoverProvider = new BDDHoverProvider(stepDefinitionProvider, outputChannel);
-  
+  const hoverProvider = new BDDHoverProvider(stepDefinitionProvider, outputChannel, executionHistoryTracker);
+
   // Initialize Auto Discovery Service
-  const autoDiscoveryService = vscode.workspace.workspaceFolders 
+  const autoDiscoveryService = vscode.workspace.workspaceFolders
     ? new AutoDiscoveryService(outputChannel, vscode.workspace.workspaceFolders[0].uri.fsPath)
     : null;
-  
+
   // Initialize Queue Manager
   const queueManager = new TestQueueManager(outputChannel);
-  
+
   // Initialize Step Creation Wizard
   const stepCreationWizard = vscode.workspace.workspaceFolders
     ? new StepCreationWizard(outputChannel, vscode.workspace.workspaceFolders[0].uri.fsPath)
@@ -435,10 +441,88 @@ export async function activate(context: vscode.ExtensionContext) {
   const settingsUI = vscode.workspace.workspaceFolders
     ? new SettingsUI(outputChannel, vscode.workspace.workspaceFolders[0].uri.fsPath)
     : null;
-  
+
   if (settingsUI) {
     context.subscriptions.push(settingsUI);
   }
+
+  // Initialize Smart Code Generator
+  const smartCodeGenerator = vscode.workspace.workspaceFolders
+    ? new SmartCodeGenerator(vscode.workspace.workspaceFolders[0].uri.fsPath, outputChannel)
+    : null;
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.generateInstructions', async () => {
+      if (!smartCodeGenerator) {
+        vscode.window.showWarningMessage('Smart Code Generator requires an open workspace.');
+        return;
+      }
+
+      try {
+        const filePath = await smartCodeGenerator.generateInstructions();
+        const doc = await vscode.workspace.openTextDocument(filePath);
+        await vscode.window.showTextDocument(doc);
+        vscode.window.showInformationMessage('Generated BDD instructions based on project analysis.');
+      } catch (error) {
+        outputChannel.appendLine(`[ERROR] Failed to generate instructions: ${error}`);
+        vscode.window.showErrorMessage('Failed to generate instructions. Check output for details.');
+      }
+    })
+  );
+
+  // Register Generate Step Definitions command (context menu)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.generateStepDefinitions', async () => {
+      if (!stepCreationWizard) {
+        vscode.window.showWarningMessage('Step Creation Wizard requires an open workspace.');
+        return;
+      }
+
+      try {
+        // Get the active editor to extract step text if in a feature file
+        const editor = vscode.window.activeTextEditor;
+        let stepText: string | undefined;
+
+        if (editor && editor.document.fileName.endsWith('.feature')) {
+          const line = editor.document.lineAt(editor.selection.active.line);
+          const stepMatch = line.text.trim().match(/^\s*(Given|When|Then|And|But)\s+(.+)/);
+
+          if (stepMatch) {
+            stepText = stepMatch[2].trim();
+            outputChannel.appendLine(`[Generate Step] Detected step: "${stepText}"`);
+          }
+        }
+
+        // Launch the wizard with or without pre-filled step text
+        await stepCreationWizard.launchWizard(stepText);
+      } catch (error) {
+        outputChannel.appendLine(`[ERROR] Failed to launch step creation wizard: ${error}`);
+        vscode.window.showErrorMessage('Failed to create step definition. Check output for details.');
+      }
+    })
+  );
+
+  // Register Generate All Step Definitions command (context menu)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('playwright-bdd.generateAllStepDefinitions', async () => {
+      if (!stepCreationWizard) {
+        vscode.window.showWarningMessage('Step Creation Wizard requires an open workspace.');
+        return;
+      }
+
+      try {
+        const editor = vscode.window.activeTextEditor;
+        if (editor && editor.document.fileName.endsWith('.feature')) {
+          await stepCreationWizard.createStepsFromFeature(editor.document.uri);
+        } else {
+          vscode.window.showWarningMessage('Please open a .feature file to generate step definitions.');
+        }
+      } catch (error) {
+        outputChannel.appendLine(`[ERROR] Failed to generate all step definitions: ${error}`);
+        vscode.window.showErrorMessage('Failed to generate step definitions. Check output for details.');
+      }
+    })
+  );
 
   // All Copilot functionality has been removed from the extension
   outputChannel.appendLine('✅ BDD Test Runner initialized without AI/Copilot features');
@@ -464,7 +548,7 @@ export async function activate(context: vscode.ExtensionContext) {
       outputChannel.appendLine(`Warning: Auto-discovery failed: ${error}`);
     }
   }
-  
+
   // Discover step definitions on startup
   if (vscode.workspace.workspaceFolders) {
     const stepsFolder = config.get<string>('stepsFolder', 'steps');
@@ -495,9 +579,45 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
+  // Register diagnostic provider for step validation
+  context.subscriptions.push(stepDefinitionProvider);
+
+  // Validate feature files on open and change
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument(async (document) => {
+      if (document.fileName.endsWith('.feature')) {
+        await stepDefinitionProvider.validateFeatureFile(document);
+      }
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument(async (event) => {
+      if (event.document.fileName.endsWith('.feature')) {
+        await stepDefinitionProvider.validateFeatureFile(event.document);
+      }
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.workspace.onDidCloseTextDocument((document) => {
+      if (document.fileName.endsWith('.feature')) {
+        stepDefinitionProvider.clearDiagnostics();
+      }
+    })
+  );
+
+  // Validate all currently open feature files
+  vscode.workspace.textDocuments.forEach(async (document) => {
+    if (document.fileName.endsWith('.feature')) {
+      await stepDefinitionProvider.validateFeatureFile(document);
+    }
+  });
+
   // Refresh CodeLens when tests start/stop
   const refreshCodeLens = () => {
     codeLensProvider.refresh();
+
   };
 
   context.subscriptions.push(
@@ -559,7 +679,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.showStepDefinitions', async () => {
       const stepDefs = stepDefinitionProvider.getAllStepDefinitions();
-      
+
       if (stepDefs.length === 0) {
         vscode.window.showInformationMessage('No step definitions found. Make sure your steps folder contains step definition files.');
         return;
@@ -589,18 +709,18 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.validateStepCoverage', async () => {
       const activeEditor = vscode.window.activeTextEditor;
-      
+
       if (!activeEditor || !activeEditor.document.fileName.endsWith('.feature')) {
         vscode.window.showWarningMessage('Please open a .feature file to validate step coverage.');
         return;
       }
 
       const coverage = stepDefinitionProvider.getStepCoverageForFeature(activeEditor.document.fileName);
-      
+
       outputChannel.appendLine(`\n=== Step Coverage Analysis ===`);
       outputChannel.appendLine(`Feature: ${path.basename(activeEditor.document.fileName)}`);
-      outputChannel.appendLine(`Coverage: ${coverage.covered}/${coverage.total} steps (${Math.round((coverage.covered/coverage.total)*100)}%)`);
-      
+      outputChannel.appendLine(`Coverage: ${coverage.covered}/${coverage.total} steps (${Math.round((coverage.covered / coverage.total) * 100)}%)`);
+
       if (coverage.missing.length > 0) {
         outputChannel.appendLine(`\nMissing step definitions:`);
         coverage.missing.forEach(step => {
@@ -609,13 +729,13 @@ export async function activate(context: vscode.ExtensionContext) {
       } else {
         outputChannel.appendLine(`\n✅ All steps have matching definitions!`);
       }
-      
+
       outputChannel.show();
-      
-      const message = coverage.missing.length > 0 
-        ? `${coverage.missing.length} steps need definitions (${Math.round((coverage.covered/coverage.total)*100)}% coverage)`
+
+      const message = coverage.missing.length > 0
+        ? `${coverage.missing.length} steps need definitions (${Math.round((coverage.covered / coverage.total) * 100)}% coverage)`
         : `All ${coverage.total} steps have definitions! ✅`;
-        
+
       vscode.window.showInformationMessage(message);
     })
   );
@@ -657,9 +777,9 @@ export async function activate(context: vscode.ExtensionContext) {
         // Parse advanced filters from query
         const filters = testSearchProvider.buildAdvancedFilter(searchQuery);
         const cleanQuery = searchQuery.replace(/\w+:[^\s]+/g, '').trim();
-        
+
         const results = await testSearchProvider.searchTests(controller, cleanQuery, filters);
-        
+
         if (results.length === 0) {
           vscode.window.showInformationMessage(`No tests found for: "${searchQuery}"`);
           return;
@@ -679,10 +799,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
         if (selected) {
           const uri = vscode.Uri.file(selected.result.filePath);
-          const position = selected.result.line 
+          const position = selected.result.line
             ? new vscode.Position(selected.result.line - 1, 0)
             : new vscode.Position(0, 0);
-          
+
           await vscode.window.showTextDocument(uri, {
             selection: new vscode.Range(position, position)
           });
@@ -708,15 +828,15 @@ export async function activate(context: vscode.ExtensionContext) {
       try {
         const filters = testSearchProvider.buildAdvancedFilter(searchQuery);
         const cleanQuery = searchQuery.replace(/\w+:[^\s]+/g, '').trim();
-        
+
         const results = await testSearchProvider.searchTests(controller, cleanQuery, filters);
         const report = testSearchProvider.exportSearchResults(results);
-        
+
         const doc = await vscode.workspace.openTextDocument({
           content: report,
           language: 'markdown'
         });
-        
+
         await vscode.window.showTextDocument(doc);
         vscode.window.showInformationMessage(`Exported ${results.length} search results`);
       } catch (error) {
@@ -754,7 +874,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       try {
         const validation = await autoDiscoveryService.validateConfiguration();
-        
+
         if (validation.valid) {
           vscode.window.showInformationMessage('✅ Configuration is valid!');
         } else {
@@ -763,7 +883,7 @@ export async function activate(context: vscode.ExtensionContext) {
             outputChannel.appendLine(`  - ${issue}`);
           });
           outputChannel.show();
-          
+
           vscode.window.showWarningMessage(
             `Configuration has ${validation.issues.length} issues. Check output for details.`
           );
@@ -806,7 +926,7 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       let featureUri = uri;
-      
+
       if (!featureUri) {
         const activeEditor = vscode.window.activeTextEditor;
         if (activeEditor && activeEditor.document.fileName.endsWith('.feature')) {
@@ -826,11 +946,11 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('playwright-bdd.showQueueStatus', async () => {
       const progress = queueManager.getProgress();
       const stats = queueManager.getStatistics();
-      
-      const message = progress.total > 0 
+
+      const message = progress.total > 0
         ? `Queue: ${progress.completed}/${progress.total} completed (${progress.percentage.toFixed(1)}%)`
         : 'Queue is empty';
-      
+
       const actions = [];
       if (progress.running > 0) {
         actions.push('Pause', 'Cancel All');
@@ -849,7 +969,7 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       const selected = await vscode.window.showInformationMessage(message, ...actions);
-      
+
       switch (selected) {
         case 'Pause':
           queueManager.pause();
@@ -887,7 +1007,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('playwright-bdd.runTestsWithQueue', async () => {
       // Build queue from test controller items
       const queueItems: any[] = [];
-      
+
       controller.items.forEach(item => {
         // Add feature-level items
         queueItems.push({
@@ -897,7 +1017,7 @@ export async function activate(context: vscode.ExtensionContext) {
           testItem: item,
           priority: 1
         });
-        
+
         // Add scenario-level items
         item.children.forEach(scenario => {
           queueItems.push({
@@ -916,7 +1036,7 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       queueManager.addToQueue(queueItems);
-      
+
       // Start with progress dialog
       vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
@@ -985,7 +1105,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const line = activeEditor.selection.active.line;
       const lineText = activeEditor.document.lineAt(line).text.trim();
-      
+
       // Check if this is a step line
       const stepMatch = lineText.match(/^\s*(Given|When|Then|And|But)\s+(.+)$/);
       if (stepMatch) {
@@ -1012,7 +1132,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const line = activeEditor.selection.active.line;
       const lineText = activeEditor.document.lineAt(line).text.trim();
-      
+
       const stepMatch = lineText.match(/^\s*(Given|When|Then|And|But)\s+(.+)$/);
       if (!stepMatch) {
         vscode.window.showWarningMessage('Breakpoints can only be set on step lines.');
@@ -1055,7 +1175,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.showWorkspaces', async () => {
       const workspaces = multiWorkspaceManager.getAllWorkspaces();
-      
+
       if (workspaces.length === 0) {
         vscode.window.showInformationMessage('No workspaces found.');
         return;
@@ -1105,7 +1225,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.switchWorkspace', async () => {
       const workspaces = multiWorkspaceManager.getAllWorkspaces();
-      
+
       if (workspaces.length <= 1) {
         vscode.window.showInformationMessage('Only one workspace available.');
         return;
@@ -1142,7 +1262,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       try {
         const results = await multiWorkspaceManager.searchAcrossWorkspaces(searchQuery);
-        
+
         if (results.length === 0) {
           vscode.window.showInformationMessage(`No results found for: "${searchQuery}"`);
           return;
@@ -1161,10 +1281,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
         if (selected) {
           const uri = vscode.Uri.file(selected.result.filePath);
-          const position = selected.result.line 
+          const position = selected.result.line
             ? new vscode.Position(selected.result.line - 1, 0)
             : new vscode.Position(0, 0);
-          
+
           await vscode.window.showTextDocument(uri, {
             selection: new vscode.Range(position, position)
           });
@@ -1179,7 +1299,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.runTestsAcrossWorkspaces', async () => {
       const workspaces = multiWorkspaceManager.getAllWorkspaces();
-      
+
       if (workspaces.length === 0) {
         vscode.window.showInformationMessage('No workspaces available.');
         return;
@@ -1203,7 +1323,7 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       const workspaceIds = selectedWorkspaces.map(item => item.workspace.id);
-      
+
       vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
         title: 'Running Tests Across Workspaces',
@@ -1213,14 +1333,14 @@ export async function activate(context: vscode.ExtensionContext) {
           const results = await multiWorkspaceManager.runTestsAcrossWorkspaces(workspaceIds, {
             parallel: true
           });
-          
+
           outputChannel.appendLine('\n🏢 Cross-Workspace Test Results:');
           results.forEach((result, workspaceId) => {
             const workspace = workspaces.find(ws => ws.id === workspaceId);
             outputChannel.appendLine(`  ${workspace?.name}: ${result.success ? '✅' : '❌'}`);
           });
           outputChannel.show();
-          
+
         } catch (error) {
           outputChannel.appendLine(`[ERROR] Cross-workspace test execution failed: ${error}`);
           vscode.window.showErrorMessage('Cross-workspace test execution failed.');
@@ -1232,7 +1352,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.createWorkspaceGroup', async () => {
       const workspaces = multiWorkspaceManager.getAllWorkspaces();
-      
+
       if (workspaces.length < 2) {
         vscode.window.showInformationMessage('At least 2 workspaces are required to create a group.');
         return;
@@ -1263,7 +1383,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const workspaceIds = selectedWorkspaces.map(item => item.workspace.id);
       const groupId = multiWorkspaceManager.createWorkspaceGroup(groupName, workspaceIds);
-      
+
       vscode.window.showInformationMessage(`Created workspace group: ${groupName} with ${workspaceIds.length} workspaces`);
     })
   );
@@ -1271,24 +1391,24 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('playwright-bdd.workspaceAnalytics', async () => {
       const analytics = multiWorkspaceManager.generateAnalytics();
-      
+
       outputChannel.appendLine('\n📊 Workspace Analytics:');
       outputChannel.appendLine(`Total Workspaces: ${analytics.totalWorkspaces}`);
       outputChannel.appendLine(`Total Features: ${analytics.totalFeatures}`);
       outputChannel.appendLine(`Total Steps: ${analytics.totalSteps}`);
       outputChannel.appendLine('\nWorkspaces by Size:');
-      
+
       analytics.workspacesBySize.forEach((ws, index) => {
         outputChannel.appendLine(`  ${index + 1}. ${ws.name}: ${ws.features} features, ${ws.steps} steps`);
       });
-      
+
       outputChannel.appendLine('\nRecently Used:');
       analytics.recentlyUsed.forEach((ws, index) => {
         outputChannel.appendLine(`  ${index + 1}. ${ws.name} (${ws.lastAccessed.toLocaleDateString()})`);
       });
-      
+
       outputChannel.show();
-      
+
       const actions = await vscode.window.showQuickPick([
         { label: '📋 Export Analytics', action: 'export' },
         { label: '📊 Show Groups', action: 'groups' }
@@ -1362,7 +1482,7 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       const status = await cicdIntegration.getStatus();
-      
+
       const message = `CI/CD Status:
 • Initialized: ${status.initialized ? '✅' : '❌'}
 • GitHub Actions: ${status.hasWorkflows ? '✅' : '❌'}
@@ -1427,7 +1547,7 @@ export async function activate(context: vscode.ExtensionContext) {
             'Setup CI/CD',
             'Cancel'
           );
-          
+
           if (result === 'Setup CI/CD') {
             await cicdIntegration.setupIntegration();
             return;
@@ -1438,7 +1558,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Show workflow management to trigger workflows
         await cicdIntegration.manageWorkflows();
-        
+
       } catch (error) {
         outputChannel.appendLine(`[ERROR] GitHub workflow trigger failed: ${error}`);
         vscode.window.showErrorMessage('Failed to trigger GitHub workflow. Check output for details.');
@@ -1456,7 +1576,7 @@ export async function activate(context: vscode.ExtensionContext) {
       try {
         // Get workflows and show status
         await cicdIntegration.manageWorkflows();
-        
+
       } catch (error) {
         outputChannel.appendLine(`[ERROR] Failed to view workflow status: ${error}`);
         vscode.window.showErrorMessage('Failed to view workflow status. Check output for details.');
@@ -1469,7 +1589,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('playwright-bdd.showExecutionHistory', async () => {
       const { getExecutionHistory, clearExecutionHistory } = await import('./bddRunner');
       const history = getExecutionHistory();
-      
+
       if (history.length === 0) {
         vscode.window.showInformationMessage('No test execution history available.');
         return;

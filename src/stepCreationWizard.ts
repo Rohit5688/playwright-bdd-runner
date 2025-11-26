@@ -128,13 +128,13 @@ export class StepCreationWizard {
   } {
     // Determine step type based on keywords
     const stepType = this.determineStepType(stepText);
-    
+
     // Clean the text (remove step type if present)
     const cleanText = stepText.replace(/^(Given|When|Then|And|But)\s+/i, '').trim();
-    
+
     // Extract parameters
     const parameters = this.extractParametersFromText(cleanText);
-    
+
     // Generate function name
     const suggestedFunctionName = this.generateFunctionName(cleanText);
 
@@ -152,7 +152,7 @@ export class StepCreationWizard {
    */
   private determineStepType(stepText: string): 'Given' | 'When' | 'Then' {
     const text = stepText.toLowerCase();
-    
+
     if (text.includes('given') || text.includes('assume') || text.includes('setup')) {
       return 'Given';
     } else if (text.includes('when') || text.includes('click') || text.includes('enter') || text.includes('select')) {
@@ -167,7 +167,7 @@ export class StepCreationWizard {
    */
   private extractParametersFromText(text: string): Array<{ name: string; type: string; value: string }> {
     const parameters: Array<{ name: string; type: string; value: string }> = [];
-    
+
     // Extract quoted strings
     const stringMatches = text.match(/"([^"]+)"/g) || [];
     stringMatches.forEach((match, index) => {
@@ -218,7 +218,7 @@ export class StepCreationWizard {
 
     // Framework selection
     const framework = await vscode.window.showQuickPick(
-      ['playwright-bdd', 'cucumber', 'generic'], 
+      ['playwright-bdd', 'cucumber', 'generic'],
       { placeHolder: 'Select testing framework' }
     );
     if (!framework) return undefined;
@@ -242,25 +242,25 @@ export class StepCreationWizard {
   private async getQuickCreationOptions(): Promise<StepCreationOptions | undefined> {
     const config = vscode.workspace.getConfiguration('playwrightBdd');
     const stepsFolder = config.get<string>('stepsFolder', 'steps');
-    
+
     // Try to find existing step files
     const stepFiles = await this.findStepFiles();
-    
+
     let targetFile: string;
-    
+
     if (stepFiles.length > 0) {
       // Use existing file or create new one
       const fileOptions = [
         ...stepFiles.map(f => ({ label: path.basename(f), detail: f })),
         { label: '$(plus) Create new file', detail: 'new' }
       ];
-      
+
       const selected = await vscode.window.showQuickPick(fileOptions, {
         placeHolder: 'Select target file for step definition'
       });
-      
+
       if (!selected) return undefined;
-      
+
       if (selected.detail === 'new') {
         targetFile = await this.createNewStepFile(stepsFolder);
       } else {
@@ -284,7 +284,7 @@ export class StepCreationWizard {
    */
   private async selectTargetFile(language: string): Promise<string | undefined> {
     const stepFiles = await this.findStepFiles();
-    
+
     const options = [
       ...stepFiles.map(file => ({
         label: path.basename(file),
@@ -320,14 +320,14 @@ export class StepCreationWizard {
     const config = vscode.workspace.getConfiguration('playwrightBdd');
     const stepsFolder = config.get<string>('stepsFolder', 'steps');
     const filePattern = config.get<string>('stepsFilePattern', '**/*.{js,ts,mjs,mts}');
-    
+
     try {
       const files = await vscode.workspace.findFiles(
         `${stepsFolder}/${filePattern}`,
         '**/node_modules/**',
         50
       );
-      
+
       return files.map(file => file.fsPath);
     } catch {
       return [];
@@ -358,10 +358,10 @@ export class StepCreationWizard {
     }
 
     const fullPath = path.join(this.workspaceRoot, stepsFolder, fileName);
-    
+
     // Ensure directory exists
     await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
-    
+
     return fullPath;
   }
 
@@ -369,7 +369,7 @@ export class StepCreationWizard {
    * Create step template
    */
   private async createStepTemplate(
-    analysis: any, 
+    analysis: any,
     options: StepCreationOptions
   ): Promise<StepTemplate> {
     const template: StepTemplate = {
@@ -395,9 +395,9 @@ export class StepCreationWizard {
   private generateImplementation(analysis: any, options: StepCreationOptions): string {
     const { language, framework } = options;
     const isTypeScript = language === 'typescript';
-    
+
     let impl = '';
-    
+
     if (framework === 'playwright-bdd') {
       impl = '// TODO: Implement step logic\n';
       impl += 'await page.pause(); // Remove this line and add your implementation';
@@ -407,7 +407,7 @@ export class StepCreationWizard {
     } else {
       impl = '// TODO: Implement step logic';
     }
-    
+
     return impl;
   }
 
@@ -415,24 +415,24 @@ export class StepCreationWizard {
    * Show preview and get confirmation
    */
   private async showPreviewAndConfirm(
-    template: StepTemplate, 
+    template: StepTemplate,
     options: StepCreationOptions
   ): Promise<boolean> {
     const code = this.generateStepCode(template, options);
-    
+
     const doc = await vscode.workspace.openTextDocument({
       content: code,
       language: options.language
     });
-    
+
     await vscode.window.showTextDocument(doc, { preview: true });
-    
+
     const result = await vscode.window.showInformationMessage(
       'Preview the step definition. Do you want to create it?',
       'Create Step',
       'Cancel'
     );
-    
+
     return result === 'Create Step';
   }
 
@@ -442,22 +442,19 @@ export class StepCreationWizard {
   private generateStepCode(template: StepTemplate, options: StepCreationOptions): string {
     const { language, framework, addImports, addComments } = options;
     const isTypeScript = language === 'typescript';
-    
+
     let code = '';
-    
+
     // Add imports
     if (addImports) {
       if (framework === 'playwright-bdd') {
-        code += `import { ${template.stepType.toLowerCase()} } from 'playwright-bdd';\n`;
-        if (isTypeScript) {
-          code += `import { Page } from '@playwright/test';\n`;
-        }
+        // Don't add individual imports - they're added at file level
       } else if (framework === 'cucumber') {
         code += `import { ${template.stepType} } from '@cucumber/cucumber';\n`;
       }
       code += '\n';
     }
-    
+
     // Add comments
     if (addComments) {
       code += `/**\n * ${template.stepType}: ${template.stepText}\n`;
@@ -468,7 +465,7 @@ export class StepCreationWizard {
       }
       code += ' */\n';
     }
-    
+
     // Generate step definition
     const paramList = template.parameters.map(p => {
       if (isTypeScript) {
@@ -476,19 +473,19 @@ export class StepCreationWizard {
       }
       return p.name;
     }).join(', ');
-    
+
     const stepPattern = this.createStepPattern(template.stepText, template.parameters);
-    
+
     if (framework === 'playwright-bdd') {
-      code += `${template.stepType.toLowerCase()}('${stepPattern}', async ({ page }${paramList ? `, ${paramList}` : ''}) => {\n`;
+      code += `${template.stepType}('${stepPattern}', async ({ page }${paramList ? `, ${paramList}` : ''}) => {\n`;
     } else {
       code += `${template.stepType}('${stepPattern}', async (${paramList}) => {\n`;
     }
-    
+
     // Add implementation
     code += '  ' + template.implementation.replace(/\n/g, '\n  ') + '\n';
     code += '});\n';
-    
+
     return code;
   }
 
@@ -497,31 +494,37 @@ export class StepCreationWizard {
    */
   private createStepPattern(stepText: string, parameters: any[]): string {
     let pattern = stepText;
-    
-    parameters.forEach((param, index) => {
-      if (param.type === 'string' && param.defaultValue) {
-        // Replace quoted strings with {string} placeholders
-        pattern = pattern.replace(`"${param.defaultValue}"`, `{${param.name}}`);
-      } else if (param.type === 'number' && param.defaultValue) {
-        // Replace numbers with {int} or {float} placeholders
-        const isFloat = param.defaultValue.includes('.');
-        pattern = pattern.replace(param.defaultValue, `{${isFloat ? 'float' : 'int'}}`);
-      }
-    });
-    
+
+    // Convert actual values to Cucumber expressions
+    // Replace quoted strings with {string}
+    pattern = pattern.replace(/'[^']+'/g, '{string}');
+    pattern = pattern.replace(/"[^"]+"/g, '{string}');
+
+    // Replace numbers with {int} or {float}
+    pattern = pattern.replace(/\b\d+\.\d+\b/g, '{float}');
+    pattern = pattern.replace(/\b\d+\b/g, '{int}');
+
     return pattern;
   }
-
   /**
    * Generate and save step definition
    */
   private async generateStepDefinition(template: StepTemplate, options: StepCreationOptions): Promise<void> {
     const code = this.generateStepCode(template, options);
-    const targetFile = options.targetFile!;
-    
+    const targetFile = path.normalize(options.targetFile!);
+    this.outputChannel.appendLine(`Checking if file exists: ${targetFile}`);
+
     // Check if file exists
-    const fileExists = await fs.promises.access(targetFile).then(() => true).catch(() => false);
-    
+    let fileExists = false;
+    try {
+      fileExists = fs.existsSync(targetFile);
+    } catch (e) {
+      this.outputChannel.appendLine(`Error checking file existence: ${e}`);
+      fileExists = false;
+    }
+
+    this.outputChannel.appendLine(`File exists: ${fileExists}`);
+
     if (fileExists) {
       // Append to existing file
       const existingContent = await fs.promises.readFile(targetFile, 'utf8');
@@ -530,24 +533,22 @@ export class StepCreationWizard {
     } else {
       // Create new file with imports and step
       let fileContent = '';
-      
+
       if (options.addImports && options.framework === 'playwright-bdd') {
-        fileContent += `import { given, when, then } from 'playwright-bdd';\n`;
-        if (options.language === 'typescript') {
-          fileContent += `import { Page } from '@playwright/test';\n`;
-        }
+        fileContent += `import { createBdd } from 'playwright-bdd';\n`;
+        fileContent += `const { Given, When, Then } = createBdd();\n`;
         fileContent += '\n';
       }
-      
+
       fileContent += code;
-      
+
       await fs.promises.writeFile(targetFile, fileContent);
     }
-    
+
     // Open the file and navigate to the new step
     const doc = await vscode.workspace.openTextDocument(targetFile);
     await vscode.window.showTextDocument(doc);
-    
+
     this.outputChannel.appendLine(`✅ Step definition created in: ${targetFile}`);
   }
 
@@ -557,34 +558,34 @@ export class StepCreationWizard {
   async createStepsFromFeature(featureUri: vscode.Uri): Promise<void> {
     try {
       this.outputChannel.appendLine(`🔍 Analyzing feature file: ${path.basename(featureUri.fsPath)}`);
-      
+
       const content = await fs.promises.readFile(featureUri.fsPath, 'utf8');
       const missingSteps = this.findMissingSteps(content);
-      
+
       if (missingSteps.length === 0) {
         vscode.window.showInformationMessage('No missing steps found in this feature file.');
         return;
       }
-      
+
       const result = await vscode.window.showInformationMessage(
         `Found ${missingSteps.length} missing steps. Create all step definitions?`,
         'Create All',
         'Cancel'
       );
-      
+
       if (result === 'Create All') {
         const options = await this.getQuickCreationOptions();
         if (!options) return;
-        
+
         for (const step of missingSteps) {
           const analysis = this.analyzeStepText(step);
           const template = await this.createStepTemplate(analysis, options);
           await this.generateStepDefinition(template, options);
         }
-        
+
         vscode.window.showInformationMessage(`✅ Created ${missingSteps.length} step definitions!`);
       }
-      
+
     } catch (error) {
       this.outputChannel.appendLine(`❌ Failed to create steps from feature: ${error}`);
       vscode.window.showErrorMessage(`Failed to create steps: ${error}`);
@@ -597,7 +598,7 @@ export class StepCreationWizard {
   private findMissingSteps(content: string): string[] {
     const lines = content.split('\n');
     const steps: string[] = [];
-    
+
     for (const line of lines) {
       const stepMatch = line.trim().match(/^\s*(Given|When|Then|And|But)\s+(.+)$/);
       if (stepMatch) {
@@ -607,7 +608,7 @@ export class StepCreationWizard {
         }
       }
     }
-    
+
     return steps;
   }
 }

@@ -13,19 +13,21 @@ export interface StepDefinition {
 export class StepDefinitionProvider implements vscode.DefinitionProvider {
   private stepDefinitions: StepDefinition[] = [];
   private outputChannel: vscode.OutputChannel;
+  private diagnosticCollection: vscode.DiagnosticCollection;
 
   constructor(outputChannel: vscode.OutputChannel) {
     this.outputChannel = outputChannel;
+    this.diagnosticCollection = vscode.languages.createDiagnosticCollection('playwright-bdd');
   }
 
   async discoverStepDefinitions(workspaceRoot: string, stepsFolder: string = 'src/steps'): Promise<void> {
     try {
       this.outputChannel.appendLine('🔍 Starting step definition discovery...');
       const startTime = Date.now();
-      
+
       this.stepDefinitions = [];
       const stepsPath = path.resolve(workspaceRoot, stepsFolder);
-      
+
       if (!fs.existsSync(stepsPath)) {
         this.outputChannel.appendLine(`⚠️ Steps folder not found: ${stepsPath}`);
         return;
@@ -52,16 +54,16 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
 
   private async findStepFiles(stepsPath: string): Promise<string[]> {
     const files: string[] = [];
-    
+
     const scanDirectory = (dir: string) => {
       try {
         const items = fs.readdirSync(dir);
-        
+
         for (const item of items) {
           const fullPath = path.join(dir, item);
           try {
             const stat = fs.statSync(fullPath);
-            
+
             if (stat.isDirectory()) {
               scanDirectory(fullPath);
             } else if (item.endsWith('.ts') || item.endsWith('.js')) {
@@ -87,35 +89,35 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
-        
+
         // Enhanced step definition patterns - covers ALL types of step definitions
         const stepPatterns = [
           // Standard format: Given('pattern', function)
           /^(Given|When|Then)\s*\(\s*['"`]([^'"`]+)['"`]\s*,\s*(.+)\)/,
-          
+
           // Alternative formats: Given("pattern", async () => {})
           /^(Given|When|Then)\s*\(\s*['"`]([^'"`]+)['"`]\s*,\s*async\s*\(\s*\)\s*=>\s*\{/,
-          
+
           // Function declaration: Given("pattern", async function() {})
           /^(Given|When|Then)\s*\(\s*['"`]([^'"`]+)['"`]\s*,\s*async\s+function\s*\(/,
-          
+
           // TypeScript arrow functions: Given("pattern", async (): Promise<void> => {})
           /^(Given|When|Then)\s*\(\s*['"`]([^'"`]+)['"`]\s*,\s*async\s*\([^)]*\)\s*:\s*[^=]*=>\s*\{/,
-          
+
           // Cucumber-style with decorators: @Given("pattern")
           /^@(Given|When|Then)\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/,
-          
+
           // Multi-line step definitions (check if next lines contain function)
           /^(Given|When|Then)\s*\(\s*['"`]([^'"`]+)['"`]\s*,?\s*$/
         ];
 
         for (const pattern of stepPatterns) {
           const stepMatch = line.match(pattern);
-          
+
           if (stepMatch) {
             const [fullMatch, type, stepPattern] = stepMatch;
             let functionDef = '';
-            
+
             // For single-line matches, extract function definition
             if (fullMatch.includes(',')) {
               const commaIndex = fullMatch.indexOf(',');
@@ -132,14 +134,14 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
                 nextLineIndex++;
               }
             }
-            
+
             // Only add if we haven't already found this pattern (avoid duplicates)
-            const isDuplicate = this.stepDefinitions.some(existing => 
-              existing.pattern === stepPattern && 
-              existing.type === type && 
+            const isDuplicate = this.stepDefinitions.some(existing =>
+              existing.pattern === stepPattern &&
+              existing.type === type &&
               existing.file === filePath
             );
-            
+
             if (!isDuplicate) {
               this.stepDefinitions.push({
                 pattern: stepPattern,
@@ -151,7 +153,7 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
 
               this.outputChannel.appendLine(`  📝 Found ${type}: "${stepPattern}" in ${path.basename(filePath)}:${i + 1}`);
             }
-            
+
             break; // Found a match, no need to check other patterns
           }
         }
@@ -169,24 +171,24 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
   ): Promise<vscode.Definition | undefined> {
     const line = document.lineAt(position);
     const stepMatch = line.text.trim().match(/^\s*(Given|When|Then|And|But)\s+(.+)/);
-    
+
     if (stepMatch) {
       const stepText = stepMatch[2].trim();
       return await this.findStepDefinition(stepText);
     }
-    
+
     return undefined;
   }
 
   async findStepDefinition(stepText: string): Promise<vscode.Location | undefined> {
     const matchedStep = this.findMatchingStep(stepText);
-    
+
     if (matchedStep) {
       const uri = vscode.Uri.file(matchedStep.file);
       const position = new vscode.Position(matchedStep.line - 1, 0);
       return new vscode.Location(uri, position);
     }
-    
+
     return undefined;
   }
 
@@ -197,32 +199,23 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
         if (stepText.toLowerCase() === step.pattern.toLowerCase()) {
           return true;
         }
-        
+
         // Strategy 2: Enhanced parameter replacement for scenario outlines + API calls
         let enhancedPattern = step.pattern;
-        
-        // Handle scenario outline parameters first (most specific)
+
+        // CRITICAL: Handle Cucumber parameters FIRST before any quoted string replacements
+        // This ensures {string} placeholders are converted to regex patterns that can match
+        // both literal values AND scenario outline parameters
         enhancedPattern = enhancedPattern
-          .replace(/'<[^>]+>'/g, "'[^']*'")    // '<param>' -> match any quoted content
-          .replace(/"<[^>]+>"/g, '"[^"]*"')    // "<param>" -> match any quoted content
-          .replace(/<[^>]+>/g, '[^\\s]+');     // <param> -> match any non-space content
-        
-        // Handle Cucumber parameters - fixed regex patterns
-        enhancedPattern = enhancedPattern
-          .replace(/\{string\}/g, '(?:["\'][^"\']*["\'])')  // {string} -> match quoted strings
-          .replace(/\{int\}/g, '\\d+')                      // {int} -> match numbers
-          .replace(/\{float\}/g, '\\d+\\.?\\d*')            // {float} -> match decimals
-          .replace(/\{word\}/g, '[a-zA-Z0-9_]+')            // {word} -> match word characters
-          .replace(/\{[^}]+\}/g, '[^\\s]+');                // {anyParam} -> match non-space
-        
-        // Handle quoted strings (API endpoints, JSON, etc.) - fixed patterns
-        enhancedPattern = enhancedPattern
-          .replace(/'[^']*'/g, "'[^']*'")       // Match any single-quoted string
-          .replace(/"[^"]*"/g, '"[^"]*"');      // Match any double-quoted string
-        
+          .replace(/\{string\}/g, "(?:'[^']*'|\"[^\"]*\")")  // {string} -> match any quoted string (single or double)
+          .replace(/\{int\}/g, '(?:\\d+|\u003c[^>]+>)')              // {int} -> match numbers or <placeholder>
+          .replace(/\{float\}/g, '(?:\\d+\\.?\\d*|\u003c[^>]+>)')    // {float} -> match decimals or <placeholder>
+          .replace(/\{word\}/g, '(?:[a-zA-Z0-9_]+|\u003c[^>]+>)')  // {word} -> match word chars or <placeholder>
+          .replace(/\{[^}]+\}/g, '(?:[^\\s]+|\u003c[^>]+>)');    // {anyParam} -> match non-space or <placeholder>
+
         // Normalize whitespace
         enhancedPattern = enhancedPattern.replace(/\s+/g, '\\s+');
-        
+
         try {
           const regex = new RegExp(`^${enhancedPattern}$`, 'i');
           if (regex.test(stepText)) {
@@ -231,21 +224,21 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
         } catch (regexError) {
           // Silently continue to fallback methods
         }
-        
+
         // Strategy 3: Fuzzy matching for API steps with parameters
         const fuzzyMatch = this.performApiAwareFuzzyMatch(stepText, step.pattern);
         if (fuzzyMatch) {
           return true;
         }
-        
+
         // Strategy 4: Structural matching (ignore parameter values, focus on structure)
         const structuralMatch = this.performStructuralMatch(stepText, step.pattern);
         if (structuralMatch) {
           return true;
         }
-        
+
         return false;
-        
+
       } catch (error) {
         return false;
       }
@@ -264,41 +257,41 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
           .replace(/'<[^>]+>'/g, 'SCENARIO_PARAM')
           .replace(/"<[^>]+>"/g, 'SCENARIO_PARAM')
           .replace(/<[^>]+>/g, 'SCENARIO_PARAM')
-          
+
           // Replace cucumber parameters with placeholders
           .replace(/\{[^}]+\}/g, 'CUCUMBER_PARAM')
-          
+
           // Replace quoted strings with placeholders
           .replace(/'[^']*'/g, 'QUOTED_STRING')
           .replace(/"[^"]*"/g, 'QUOTED_STRING')
-          
+
           // Normalize whitespace and punctuation
           .replace(/[^\w\s]/g, ' ')
           .replace(/\s+/g, ' ')
           .trim();
       };
-      
+
       const normalizedStep = normalizeForApiComparison(stepText);
       const normalizedPattern = normalizeForApiComparison(pattern);
-      
+
       // Check if the normalized structures are similar
       if (normalizedStep === normalizedPattern) {
         return true;
       }
-      
+
       // For API steps, check if key API terms match
       const apiTerms = ['api', 'call', 'request', 'response', 'get', 'post', 'put', 'delete', 'patch', 'through', 'aggregator', 'endpoint'];
       const stepApiTerms = apiTerms.filter(term => normalizedStep.includes(term));
       const patternApiTerms = apiTerms.filter(term => normalizedPattern.includes(term));
-      
+
       // If both have API terms, check if they match
       if (stepApiTerms.length > 0 && patternApiTerms.length > 0) {
         const matchingApiTerms = stepApiTerms.filter(term => patternApiTerms.includes(term));
         return matchingApiTerms.length > 0;
       }
-      
+
       return false;
-      
+
     } catch (error) {
       return false;
     }
@@ -319,30 +312,30 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
           .replace(/\{[^}]+\}/g, '')
           .replace(/'[^']*'/g, '')
           .replace(/"[^"]*"/g, '')
-          
+
           // Extract remaining meaningful words
           .split(/\s+/)
           .filter(word => word.length > 2)
           .filter(word => !['and', 'the', 'for', 'with', 'from', 'that'].includes(word));
       };
-      
+
       const stepStructure = extractStructure(stepText);
       const patternStructure = extractStructure(pattern);
-      
+
       // Check if most structural words match
       if (stepStructure.length === 0 || patternStructure.length === 0) {
         return false;
       }
-      
-      const matchingWords = stepStructure.filter(word => 
-        patternStructure.some(patternWord => 
+
+      const matchingWords = stepStructure.filter(word =>
+        patternStructure.some(patternWord =>
           word.includes(patternWord) || patternWord.includes(word)
         )
       );
-      
+
       const matchRatio = matchingWords.length / Math.max(stepStructure.length, patternStructure.length);
       return matchRatio >= 0.6; // 60% structural similarity
-      
+
     } catch (error) {
       return false;
     }
@@ -361,11 +354,11 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
 
       for (const line of lines) {
         const stepMatch = line.trim().match(/^\s*(Given|When|Then|And|But)\s+(.+)/);
-        
+
         if (stepMatch) {
           const stepText = stepMatch[2].trim();
           steps.push(stepText);
-          
+
           const matchedDefinition = this.findMatchingStep(stepText);
           if (!matchedDefinition) {
             missing.push(stepText);
@@ -382,5 +375,54 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
       this.outputChannel.appendLine(`❌ Error analyzing step coverage for ${featureFile}: ${error}`);
       return { covered: 0, total: 0, missing: [] };
     }
+  }
+
+  /**
+   * Validate steps in a feature file and update diagnostics
+   */
+  async validateFeatureFile(document: vscode.TextDocument): Promise<void> {
+    if (!document.fileName.endsWith('.feature')) {
+      return;
+    }
+
+    const diagnostics: vscode.Diagnostic[] = [];
+    const lines = document.getText().split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const stepMatch = line.trim().match(/^\s*(Given|When|Then|And|But)\s+(.+)/);
+
+      if (stepMatch) {
+        const stepText = stepMatch[2].trim();
+        const matchedStep = this.findMatchingStep(stepText);
+
+        if (!matchedStep) {
+          const range = new vscode.Range(i, 0, i, line.length);
+          const diagnostic = new vscode.Diagnostic(
+            range,
+            `No step definition found for: "${stepText}"`,
+            vscode.DiagnosticSeverity.Warning
+          );
+          diagnostic.source = 'playwright-bdd';
+          diagnostics.push(diagnostic);
+        }
+      }
+    }
+
+    this.diagnosticCollection.set(document.uri, diagnostics);
+  }
+
+  /**
+   * Clear all diagnostics
+   */
+  clearDiagnostics(): void {
+    this.diagnosticCollection.clear();
+  }
+
+  /**
+   * Dispose of the diagnostic collection
+   */
+  dispose(): void {
+    this.diagnosticCollection.dispose();
   }
 }

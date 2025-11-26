@@ -1,0 +1,18 @@
+{
+  "framework": "vanilla-playwright",
+  "detected": "2025-11-25T18:47:20.090Z",
+  "utilities": {
+    "actions": [],
+    "assertions": [],
+    "locators": [],
+    "navigation": []
+  },
+  "codeStyle": {
+    "exports": "named",
+    "async": false,
+    "architecture": "pom-functional"
+  },
+  "directories": {
+    "steps": "src/steps"
+  }
+}

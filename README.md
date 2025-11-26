@@ -2,9 +2,11 @@
 
 A comprehensive VS Code extension for running Playwright BDD tests with advanced debugging and multi-workspace support.
 
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://marketplace.visualstudio.com/items?itemName=rohitsakhawalkar.playwright-bdd-lens)
+
+[![Version](https://img.shields.io/badge/version-0.4.2-blue.svg)](https://marketplace.visualstudio.com/items?itemName=rohitsakhawalkar.playwright-bdd-lens)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.101.0+-brightgreen.svg)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 
 ## 🚀 Quick Start
 
@@ -22,6 +24,11 @@ A comprehensive VS Code extension for running Playwright BDD tests with advanced
 - **Test Explorer Integration**: Native VS Code Test Explorer support
 - **Step Definition Linking**: Navigate from steps to their implementations
 - **Tag-Based Filtering**: Run specific test subsets using `@tag` annotations
+- **Generate Step Definitions**: Create step definitions directly from feature files
+  - Right-click on any step → "Generate Step Definition"
+  - Bulk generation for entire feature files
+  - Smart parameter detection (`{string}`, `{int}`, `{float}`)
+  - Append to existing files or create new ones
 
 ### 🛠️ **Advanced Debugging**
 - **Step-by-Step Debugging**: Debug individual Gherkin steps with full context
@@ -257,7 +264,20 @@ npm test
 
 ## 📝 Changelog
 
-### Version 0.4.0 (Latest)
+### Version 0.4.2 (Latest)
+- ✨ **NEW**: Generate Step Definition command for creating individual step definitions
+- ✨ **NEW**: Generate All Step Definitions for bulk creation from feature files
+- ✨ **NEW**: Smart parameter detection with Cucumber expression placeholders
+- 🐛 **FIXED**: File append logic now correctly appends to existing step files
+- 🛠️ **IMPROVED**: Debug logging for step generation operations
+
+### Version 0.4.1
+- 🐛 **FIXED**: Step definition navigation with scenario outline placeholders
+- 🐛 **FIXED**: Real-time step validation warnings in feature files
+- ✨ **NEW**: Diagnostic provider for missing step definitions
+- 🛠️ **IMPROVED**: Pattern matching for complex parameter types
+
+### Version 0.4.0
 - ✨ **NEW**: Comprehensive Settings UI with all configuration options
 - ✨ **NEW**: Retry mechanism with configurable count and delay
 - ✨ **NEW**: Import/Export settings functionality
