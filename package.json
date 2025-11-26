@@ -2,7 +2,7 @@
   "name": "playwright-bdd-lens",
   "displayName": "BDD Test Runner",
   "description": "Run Playwright BDD tests directly from VS Code with Test Explorer integration and feature file support.",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "publisher": "rohitsakhawalkar",
   "engines": {
     "vscode": "^1.101.0"

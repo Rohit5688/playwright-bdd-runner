@@ -5,6 +5,13 @@ All notable changes to the Playwright BDD Test Runner extension will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2025-11-26
+
+### Fixed
+- **Go to Definition Priority**: Fixed issue where "Go to Definition" would sometimes jump to an incorrect step definition
+  - Prioritized Exact and Regex matches over Fuzzy and Structural matches
+  - Ensures that steps with complex parameters (like `{ $testInfo }`) are correctly matched to their definitions
+  - Prevents structural matches from shadowing more accurate regex matches
 ## [0.4.2] - 2025-11-26
 
 ### Added

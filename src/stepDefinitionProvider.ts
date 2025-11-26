@@ -193,56 +193,63 @@ export class StepDefinitionProvider implements vscode.DefinitionProvider {
   }
 
   findMatchingStep(stepText: string): StepDefinition | undefined {
-    return this.stepDefinitions.find(step => {
-      try {
-        // Strategy 1: Direct string comparison (for exact matches)
-        if (stepText.toLowerCase() === step.pattern.toLowerCase()) {
-          return true;
-        }
+    // Strategy 1: Direct string comparison (High priority)
+    // Check ALL definitions for exact match first
+    const exactMatch = this.stepDefinitions.find(step =>
+      stepText.toLowerCase() === step.pattern.toLowerCase()
+    );
 
-        // Strategy 2: Enhanced parameter replacement for scenario outlines + API calls
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    // Strategy 2: Enhanced parameter replacement (High priority)
+    // Check ALL definitions for regex match
+    const regexMatch = this.stepDefinitions.find(step => {
+      try {
         let enhancedPattern = step.pattern;
 
         // CRITICAL: Handle Cucumber parameters FIRST before any quoted string replacements
-        // This ensures {string} placeholders are converted to regex patterns that can match
-        // both literal values AND scenario outline parameters
         enhancedPattern = enhancedPattern
           .replace(/\{string\}/g, "(?:'[^']*'|\"[^\"]*\")")  // {string} -> match any quoted string (single or double)
-          .replace(/\{int\}/g, '(?:\\d+|\u003c[^>]+>)')              // {int} -> match numbers or <placeholder>
-          .replace(/\{float\}/g, '(?:\\d+\\.?\\d*|\u003c[^>]+>)')    // {float} -> match decimals or <placeholder>
-          .replace(/\{word\}/g, '(?:[a-zA-Z0-9_]+|\u003c[^>]+>)')  // {word} -> match word chars or <placeholder>
-          .replace(/\{[^}]+\}/g, '(?:[^\\s]+|\u003c[^>]+>)');    // {anyParam} -> match non-space or <placeholder>
+          .replace(/\{int\}/g, '(?:\\d+|<[^>]+>)')              // {int} -> match numbers or <placeholder>
+          .replace(/\{float\}/g, '(?:\\d+\\.?\\d*|<[^>]+>)')    // {float} -> match decimals or <placeholder>
+          .replace(/\{word\}/g, '(?:[a-zA-Z0-9_]+|<[^>]+>)')  // {word} -> match word chars or <placeholder>
+          .replace(/\{[^}]+\}/g, '(?:[^\\s]+|<[^>]+>)');    // {anyParam} -> match non-space or <placeholder>
 
         // Normalize whitespace
         enhancedPattern = enhancedPattern.replace(/\s+/g, '\\s+');
 
-        try {
-          const regex = new RegExp(`^${enhancedPattern}$`, 'i');
-          if (regex.test(stepText)) {
-            return true;
-          }
-        } catch (regexError) {
-          // Silently continue to fallback methods
-        }
-
-        // Strategy 3: Fuzzy matching for API steps with parameters
-        const fuzzyMatch = this.performApiAwareFuzzyMatch(stepText, step.pattern);
-        if (fuzzyMatch) {
-          return true;
-        }
-
-        // Strategy 4: Structural matching (ignore parameter values, focus on structure)
-        const structuralMatch = this.performStructuralMatch(stepText, step.pattern);
-        if (structuralMatch) {
-          return true;
-        }
-
-        return false;
-
-      } catch (error) {
+        const regex = new RegExp(`^${enhancedPattern}$`, 'i');
+        return regex.test(stepText);
+      } catch (regexError) {
         return false;
       }
     });
+
+    if (regexMatch) {
+      return regexMatch;
+    }
+
+    // Strategy 3: Fuzzy matching (Medium priority)
+    const fuzzyMatch = this.stepDefinitions.find(step =>
+      this.performApiAwareFuzzyMatch(stepText, step.pattern)
+    );
+
+    if (fuzzyMatch) {
+      return fuzzyMatch;
+    }
+
+    // Strategy 4: Structural matching (Low priority)
+    const structuralMatch = this.stepDefinitions.find(step =>
+      this.performStructuralMatch(stepText, step.pattern)
+    );
+
+    if (structuralMatch) {
+      return structuralMatch;
+    }
+
+    return undefined;
   }
 
   /**
