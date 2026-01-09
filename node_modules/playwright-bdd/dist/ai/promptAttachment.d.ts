@@ -1,0 +1,18 @@
+/**
+ * Handles prompt attachment for AI fixing of tests.
+ */
+import { Page } from '@playwright/test';
+import { BddContext } from '../runtime/bddContext';
+export declare class PromptFixture {
+    private bddContext;
+    private page?;
+    constructor(bddContext: BddContext);
+    private get bddConfig();
+    private get testInfo();
+    setPage(page: Page): void;
+    attach(): Promise<void>;
+    private isFailedTest;
+    private getAttachmentName;
+}
+export declare function isPromptAttachmentContentType(contentType: string): contentType is "text/plain+prompt";
+//# sourceMappingURL=promptAttachment.d.ts.map

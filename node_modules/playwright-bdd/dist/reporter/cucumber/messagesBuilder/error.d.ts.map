@@ -1,0 +1,1 @@
+{"version":3,"file":"error.d.ts","sourceRoot":"","sources":["../../../../src/reporter/cucumber/messagesBuilder/error.ts"],"names":[],"mappings":"AAAA;;GAEG;AACH,OAAO,KAAK,EAAE,MAAM,2BAA2B,CAAC;AAChD,OAAO,KAAK,QAAQ,MAAM,oBAAoB,CAAC;AAG/C,wBAAgB,iBAAiB,CAAC,KAAK,EAAE,EAAE,CAAC,SAAS,UAEpD;AAED,wBAAgB,cAAc,CAAC,KAAK,EAAE,EAAE,CAAC,SAAS,GAAG,QAAQ,CAAC,SAAS,CAOtE"}
