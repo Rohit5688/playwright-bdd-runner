@@ -40,4 +40,7 @@ playwright-report/
 
 # Ignore feature test history if implemented
 bdd-test-history.json
-.vscode/bdd-test-
+.vscode/bdd-test-*
+
+# VS Code test directory
+.vscode-test/
