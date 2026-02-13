@@ -266,7 +266,8 @@ export async function activate(context: vscode.ExtensionContext) {
       terminal.show();
 
       if (enableFeatureGen) {
-        terminal.sendText(`${featureGenCommand} && ${testCommand}`);
+        terminal.sendText(featureGenCommand);
+        terminal.sendText(testCommand);
       } else {
         terminal.sendText(testCommand);
       }
@@ -311,7 +312,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const terminal = vscode.window.createTerminal('Playwright BDD');
       terminal.show();
-      terminal.sendText(`${featureGenCommand} && ${testCommand}`);
+      // Execute commands sequentially to avoid && operator issues in PowerShell
+      terminal.sendText(featureGenCommand);
+      terminal.sendText(testCommand);
     })
   );
   // Debounced file watcher to prevent excessive refreshes

@@ -1,0 +1,86 @@
+{
+    "scopeName": "text.gherkin.feature",
+    "patterns": [
+        {
+            "include": "#feature_element"
+        },
+        {
+            "include": "#feature_element_keyword"
+        },
+        {
+            "include": "#comment"
+        },
+        {
+            "include": "#tag"
+        },
+        {
+            "include": "#step"
+        },
+        {
+            "include": "#examples_table"
+        },
+        {
+            "include": "#doc_string"
+        }
+    ],
+    "repository": {
+        "feature_element": {
+            "match": "^\\s*(Feature|Background|Scenario|Scenario Outline|Rule|Example)\\s*:\\s*(.*)$",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.cucumber.feature"
+                },
+                "2": {
+                    "name": "entity.name.function.cucumber"
+                }
+            }
+        },
+        "feature_element_keyword": {
+            "match": "^\\s*(Feature|Background|Scenario|Scenario Outline|Rule|Example)\\s*:",
+            "name": "keyword.control.cucumber.feature"
+        },
+        "comment": {
+            "match": "^\\s*#.*$",
+            "name": "comment.line.number-sign.cucumber"
+        },
+        "tag": {
+            "match": "@[^\\s]+",
+            "name": "storage.type.tag.cucumber"
+        },
+        "step": {
+            "match": "^\\s*(Given|When|Then|And|But|\\*)\\s+(.*)$",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.cucumber.step"
+                },
+                "2": {
+                    "name": "string.unquoted.cucumber.step"
+                }
+            }
+        },
+        "examples_table": {
+            "begin": "^\\s*(Examples)\\s*:\\s*$",
+            "end": "^\\s*$",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.cucumber.examples"
+                }
+            },
+            "patterns": [
+                {
+                    "match": "\\|",
+                    "name": "keyword.operator.cucumber.table"
+                },
+                {
+                    "match": "[^\\|\\s]+",
+                    "name": "string.unquoted.cucumber.table"
+                }
+            ]
+        },
+        "doc_string": {
+            "begin": "^\\s*(\"\"\")",
+            "end": "^\\s*(\"\"\")",
+            "name": "string.quoted.double.heredoc.cucumber"
+        }
+    }
+}
